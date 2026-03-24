@@ -77,7 +77,6 @@
     .dropdown-item { padding: 8px 12px; display: flex; align-items: center; gap: 8px; cursor: pointer; border-radius: 6px; font-size: 13px; transition: background 0.1s; }
     .dropdown-item:hover { background-color: #f1f5f9; color: #0ea5e9; }
     html.dark .dropdown-item:hover { background-color: #334155; color: #818cf8; }
-    @media print { body * { visibility: hidden; } #print-area, #print-area * { visibility: visible; } #print-area { position: absolute; left: 0; top: 0; width: 100%; height: 100%; z-index: 99999; background: white; display: flex !important; flex-direction: column; align-items: center; } #print-area img, #print-area canvas { max-width: 100%; height: auto; margin-bottom: 20px; page-break-after: always; } ::-webkit-scrollbar { display: none; } }
   </style>
 </head>
 <body>
@@ -651,17 +650,22 @@
   <div v-if="showImportModal" class="fixed inset-0 bg-slate-900/50 dark:bg-black/80 z-[100] flex items-center justify-center p-4 backdrop-blur-sm"><div class="bg-white dark:bg-slate-800 w-full max-w-sm rounded-2xl shadow-2xl flex flex-col animate-slide-up"><div class="p-5 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center"><h3 class="font-bold text-slate-800 dark:text-white">Import Data</h3><button @click="showImportModal=false" class="dark:text-slate-400"><i class="fa-solid fa-xmark"></i></button></div><div class="p-6 space-y-4"><button @click="downloadTemplate" class="w-full py-2.5 border border-slate-200 dark:border-slate-600 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center justify-center gap-2"><i class="fa-solid fa-download"></i> Download Excel Template</button><div class="border-2 border-dashed border-orange-200 dark:border-orange-900 bg-orange-50 dark:bg-orange-900/10 rounded-xl p-8 text-center relative hover:bg-orange-100 dark:hover:bg-orange-900/20 transition"><input type="file" @change="handleImportFile" accept=".xlsx" class="absolute inset-0 opacity-0 cursor-pointer"><div class="text-orange-500 text-3xl mb-2"><i class="fa-solid fa-file-excel"></i></div><div class="text-xs font-bold text-slate-600 dark:text-slate-300">Click to Upload Excel</div><div class="text-[10px] text-slate-400 dark:text-slate-500 mt-1">.xlsx files only</div></div></div></div></div>
   <div v-if="showUserModal" class="fixed inset-0 bg-slate-900/50 dark:bg-black/80 z-[70] flex items-center justify-center p-4 backdrop-blur-sm" @click.stop="showUserModal=false"><div class="glass-card w-full max-w-xs p-6 rounded-2xl animate-slide-up" @click.stop><h3 class="font-bold mb-5 text-sm text-slate-800 dark:text-white">{{ isUserEdit ? 'Edit User' : 'Add User' }}</h3><form @submit.prevent="saveUser" class="space-y-4"><div><label class="label-xs">Username</label><div class="input-compact"><input v-model="userForm.username" class="input-plain" required :readonly="isUserEdit"></div></div><div><label class="label-xs">Password</label><div class="input-compact"><input v-model="userForm.password" type="password" class="input-plain" :required="!isUserEdit"></div></div><div><label class="label-xs">Name</label><div class="input-compact"><input v-model="userForm.name" class="input-plain" required></div></div><div><label class="label-xs">Role</label><div class="input-compact"><select v-model="userForm.role" class="input-plain font-bold dark:bg-slate-700"><option>User</option><option>Manager</option><option>Admin</option></select></div></div><div class="flex justify-end gap-2 pt-4"><button type="button" @click="showUserModal=false" class="px-4 py-2 text-xs font-bold text-slate-400 dark:text-slate-500">Cancel</button><button type="submit" class="bg-brand-600 text-white px-5 py-2 rounded-lg text-xs font-bold shadow hover:bg-brand-700">Save</button></div></form></div></div>
 
-  <div v-if="previewUrl" class="fixed inset-0 bg-slate-900/95 z-[200] flex flex-col backdrop-blur-md animate-fade-in">
-      <div class="h-14 bg-white/10 backdrop-blur-md flex items-center justify-between px-6 border-b border-white/10 shrink-0">
-          <div class="text-white font-bold text-sm truncate max-w-xs opacity-90"><i class="fa-regular fa-file mr-2"></i> Document Preview</div>
-          <div class="flex items-center gap-3">
-              <button @click="printFromPreview" class="px-4 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition flex items-center gap-2"><i class="fa-solid fa-print"></i> Print</button>
-              <button @click="handleProxyDownload({fileName: 'Document', fileUrl: previewUrl})" class="px-4 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition flex items-center gap-2"><i class="fa-solid fa-download"></i> Download</button>
-              <button @click="previewUrl=null" class="w-8 h-8 rounded-full bg-red-500/20 hover:bg-red-500 text-white flex items-center justify-center transition ml-2"><i class="fa-solid fa-xmark"></i></button>
+  <div v-if="previewUrl" class="fixed inset-0 bg-slate-900/80 z-[200] flex items-center justify-center p-4 sm:p-8 backdrop-blur-sm animate-fade-in" @click.self="previewUrl=null">
+      <div class="bg-white dark:bg-slate-800 w-full max-w-5xl h-[85vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-slide-up">
+          <div class="h-14 bg-slate-50 dark:bg-slate-900 flex items-center justify-between px-4 sm:px-6 border-b border-slate-200 dark:border-slate-700 shrink-0">
+              <div class="text-slate-700 dark:text-slate-200 font-bold text-sm truncate flex items-center gap-2">
+                  <i class="fa-regular fa-file text-brand-500"></i> Document Preview
+              </div>
+              <div class="flex items-center gap-2">
+                  <button @click="printFromPreview" class="px-3 py-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 transition text-xs font-bold flex items-center gap-2"><i class="fa-solid fa-print"></i> Print</button>
+                  <button @click="handleProxyDownload({fileName: 'Document', fileUrl: previewUrl})" class="px-3 py-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 transition text-xs font-bold flex items-center gap-2"><i class="fa-solid fa-download"></i> Download</button>
+                  <div class="w-px h-6 bg-slate-300 dark:bg-slate-700 mx-1"></div>
+                  <button @click="previewUrl=null" class="w-8 h-8 rounded-lg hover:bg-red-100 hover:text-red-500 text-slate-400 transition flex items-center justify-center"><i class="fa-solid fa-xmark text-lg"></i></button>
+              </div>
           </div>
-      </div>
-      <div class="flex-1 overflow-hidden p-4 flex items-center justify-center" @click.self="previewUrl=null">
-          <iframe :src="previewUrl" class="w-full max-w-6xl h-full bg-white rounded-xl shadow-2xl border-0"></iframe>
+          <div class="flex-1 overflow-hidden bg-slate-100 dark:bg-slate-900 relative">
+              <iframe :src="previewUrl" class="absolute inset-0 w-full h-full border-0"></iframe>
+          </div>
       </div>
   </div>
 
@@ -712,10 +716,9 @@
 
 <script>
 
-// ⚠️ ใส่ Web App URL ของคุณตรงนี้เท่านั้น!
+// ⚠️ ใส่ Web App URL ของคุณตรงนี้!
 const GAS_API_URL = "https://script.google.com/macros/s/AKfycbx_eSJZuEH8ZVPhpVDBbpNFcFa3oPG6Mma1jmI81bebXzL_gNDpxbQbNRyOAnQ0jlbc/exec"; 
 
-// ดึงข้อมูลใช้ GET
 const apiCallGet = async (action) => {
     try {
         const response = await fetch(`${GAS_API_URL}?action=${action}&t=${Date.now()}`);
@@ -727,7 +730,6 @@ const apiCallGet = async (action) => {
     }
 };
 
-// บันทึกข้อมูลใช้ POST แบบ URLSearchParams เพื่อหลีกเลี่ยง CORS Preflight 100%
 const apiCall = async (action, data = null) => {
     try {
         const formData = new URLSearchParams();
@@ -967,18 +969,76 @@ createApp({
     const processImage = (e, cb) => { const f=e.target.files[0]; if(f){ const r=new FileReader(); r.onload=ev=>cb(ev.target.result); r.readAsDataURL(f); } };
     const saveAllSettings = async (logoData, bgData) => { loading.value=true; try { await apiCall('saveSettings', {settings: JSON.parse(JSON.stringify(settings.value)), depts: JSON.parse(JSON.stringify(departments.value)), types: JSON.parse(JSON.stringify(docTypes.value)), logoData: logoData, bgData: bgData}); loadData(); showToast('success', 'Settings Saved'); } catch(err) { loading.value=false; } };
     
-    const previewDoc = (d) => { if(d.fileUrl === '#') return; let url = d.fileUrl; if(url.includes('drive.google.com')) { if(url.includes('/view')) url = url.replace('/view', '/preview'); else if(url.includes('export=view')) url = url.replace(/\/uc\?export=view&id=([-\w]+)/, '/file/d/$1/preview'); else if(!url.includes('/preview') && !url.includes('export=')) url += '/preview'; } previewUrl.value = url; isPreviewPdf.value = true; };
+    // 🟢 ระบบ Preview & Print ตัวใหม่ที่รวดเร็วและคมชัด 🟢
+    const previewDoc = (d) => { 
+        if(d.fileUrl === '#') return; 
+        let url = d.fileUrl; 
+        if(url.includes('drive.google.com')) { 
+            if(url.includes('/view')) url = url.replace('/view', '/preview'); 
+            else if(url.includes('export=view')) url = url.replace(/\/uc\?export=view&id=([-\w]+)/, '/file/d/$1/preview'); 
+            else if(!url.includes('/preview') && !url.includes('export=')) url += '/preview'; 
+        } 
+        previewUrl.value = url; 
+        isPreviewPdf.value = true; 
+    };
+
     const handleProxyDownload = async (d) => { 
         if(d.fileUrl === '#') return; let fileId = ""; const match = d.fileUrl.match(/[-\w]{25,}/); if (match) fileId = match[0]; if(!fileId) { window.open(d.fileUrl, '_blank'); return; }
-        showToast('info', 'Requesting Download...', 'System is preparing your file');
-        try { const res = await apiCall('getFileContentForClient', d.fileUrl); if (res.success) { const a = document.createElement("a"); a.href = `data:${res.mimeType};base64,${res.data}`; a.download = res.name; document.body.appendChild(a); a.click(); document.body.removeChild(a); showToast('success', 'Download Ready', 'File downloaded successfully'); } else { showToast('error', 'Download Error', 'Check permissions or file existence'); } } catch(err) { showToast('error', 'Download Error', err.toString()); }
+        showToast('info', 'Requesting Download...', 'กำลังเตรียมไฟล์ของคุณ...');
+        try { const res = await apiCall('getFileContentForClient', d.fileUrl); if (res.success) { const a = document.createElement("a"); a.href = `data:${res.mimeType};base64,${res.data}`; a.download = res.name; document.body.appendChild(a); a.click(); document.body.removeChild(a); showToast('success', 'Download Ready', 'ดาวน์โหลดสำเร็จ'); } else { showToast('error', 'Download Error', 'ตรวจสอบสิทธิ์การเข้าถึงไฟล์'); } } catch(err) { showToast('error', 'Download Error', err.toString()); }
     };
+
     const printFromPreview = () => { if(!previewUrl.value) return; handleProxyPrint(previewUrl.value); };
+
     const handleProxyPrint = async (docUrl) => {
-        if(!docUrl || docUrl === '#') return; let isImage = false; if(docUrl.match(/\.(jpeg|jpg|gif|png|bmp|webp)($|\?)/i)) { isImage = true; }
-        if(isImage) { const printWindow = window.open('', '_blank'); printWindow.document.write('<html><head><title>Print Image</title></head><body style="margin:0;display:flex;justify-content:center;align-items:center;"><img src="' + docUrl + '" onload="window.print();window.close()" style="max-width:100%;height:auto;"></body></html>'); printWindow.document.close(); return; }
-        showToast('info', 'Preparing Print...', 'Converting PDF to High-Res Image');
-        try { const res = await apiCall('getFileContentForClient', docUrl); if (res.success) { const binaryString = window.atob(res.data); const len = binaryString.length; const bytes = new Uint8Array(len); for (let i = 0; i < len; i++) { bytes[i] = binaryString.charCodeAt(i); } const loadingTask = pdfjsLib.getDocument({data: bytes}); const pdf = await loadingTask.promise; const printArea = document.getElementById('print-area'); if (printArea) { printArea.innerHTML = ''; for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) { const page = await pdf.getPage(pageNum); const viewport = page.getViewport({scale: 2.0}); const canvas = document.createElement('canvas'); const context = canvas.getContext('2d'); canvas.height = viewport.height; canvas.width = viewport.width; await page.render({canvasContext: context, viewport: viewport}).promise; printArea.appendChild(canvas); } window.print(); printArea.innerHTML = ''; } showToast('success', 'Print Job Sent'); } else { const printWindow = window.open('', '_blank'); printWindow.document.write('<html><head><title>Print</title></head><body style="margin:0;display:flex;justify-content:center;align-items:center;"><img src="' + docUrl + '" onload="window.print();window.close()" style="max-width:100%;height:auto;" onerror="window.close()"></body></html>'); printWindow.document.close(); } } catch(err) { showToast('error', 'Print Error'); }
+        if(!docUrl || docUrl === '#') return; 
+        
+        // เช็กว่าเป็นไฟล์รูปภาพหรือไม่
+        let isImage = false; 
+        if(docUrl.match(/\.(jpeg|jpg|gif|png|bmp|webp)($|\?)/i)) { isImage = true; }
+        
+        if(isImage) { 
+            const printWindow = window.open('', '_blank'); 
+            printWindow.document.write(`<html><head><title>Print Image</title></head><body style="margin:0;display:flex;justify-content:center;align-items:center;height:100vh;"><img src="${docUrl}" onload="setTimeout(()=>{window.print();window.close();}, 500);" style="max-width:100%;max-height:100%;"></body></html>`); 
+            printWindow.document.close(); 
+            return; 
+        }
+
+        // ระบบปริ้น PDF Native ไม่สูญเสียความละเอียด
+        showToast('info', 'Preparing Print...', 'กำลังดึงไฟล์ข้อมูลเพื่อสั่งปริ้น...');
+        try { 
+            const res = await apiCall('getFileContentForClient', docUrl); 
+            if (res.success) { 
+                const byteCharacters = atob(res.data); 
+                const byteNumbers = new Array(byteCharacters.length); 
+                for (let i = 0; i < byteCharacters.length; i++) { byteNumbers[i] = byteCharacters.charCodeAt(i); } 
+                const byteArray = new Uint8Array(byteNumbers); 
+                
+                // สร้าง Blob URL เพื่อส่งเข้าสู่ระบบปริ้นของ Browser โดยตรง
+                const blob = new Blob([byteArray], {type: res.mimeType || 'application/pdf'}); 
+                const blobUrl = URL.createObjectURL(blob); 
+                
+                const iframe = document.createElement('iframe'); 
+                iframe.style.display = 'none'; 
+                iframe.src = blobUrl; 
+                document.body.appendChild(iframe); 
+                
+                iframe.onload = () => { 
+                    setTimeout(() => { 
+                        iframe.contentWindow.focus(); 
+                        iframe.contentWindow.print(); 
+                        // ทำความสะอาดหน่วยความจำ
+                        setTimeout(() => { document.body.removeChild(iframe); URL.revokeObjectURL(blobUrl); }, 30000); 
+                    }, 500); 
+                }; 
+                showToast('success', 'Print Job Sent'); 
+            } else { 
+                window.open(docUrl, '_blank'); 
+            } 
+        } catch(err) { 
+            showToast('error', 'Print Error', 'เปิดหน้าต่างใหม่แทน'); 
+            window.open(docUrl, '_blank'); 
+        }
     };
 
     const executeAdvancedExport = () => { let sourceData = []; if (exportConfig.scope === 'filtered') { sourceData = filteredEmployees.value; } else { const allDocsGrp = {}; documents.value.forEach(d => { if(!allDocsGrp[d.empId]) allDocsGrp[d.empId] = {empId: d.empId, name: d.firstName+' '+d.lastName, dept: d.dept, nationalId: d.nationalId, docs: []}; allDocsGrp[d.empId].docs.push(d); }); sourceData = Object.values(allDocsGrp); } if (sourceData.length === 0) { showToast('warning', 'ไม่มีข้อมูลสำหรับ Export'); return; } let exportData = []; if (exportConfig.format === 'matrix') { const docTypesSet = new Set(); sourceData.forEach(emp => { emp.docs.forEach(doc => docTypesSet.add(doc.docType)); }); const dynamicHeaders = Array.from(docTypesSet).sort(); exportData = sourceData.map(emp => { let row = { 'Emp ID': emp.empId, 'Name': emp.name, 'Department': emp.dept }; dynamicHeaders.forEach(header => { row[header] = ''; }); emp.docs.forEach(doc => { let dateStr = formatDate(doc.expDate); if (row[doc.docType] !== '') { row[doc.docType] += ', ' + dateStr; } else { row[doc.docType] = dateStr; } }); return row; }); } else { exportData = sourceData.flatMap(emp => emp.docs.map(doc => { let row = {}; if (exportConfig.columns.empId.selected) row['Emp ID'] = emp.empId; if (exportConfig.columns.nationalId.selected) row['National ID'] = emp.nationalId || '-'; if (exportConfig.columns.name.selected) row['Name'] = emp.name; if (exportConfig.columns.dept.selected) row['Department'] = emp.dept; if (exportConfig.columns.docType.selected) row['Doc Type'] = doc.docType; if (exportConfig.columns.startDate.selected) row['Start Date'] = formatDate(doc.startDate); if (exportConfig.columns.expDate.selected) row['Expire Date'] = formatDate(doc.expDate); if (exportConfig.columns.daysLeft.selected) row['Days Left'] = doc.daysLeft; if (exportConfig.columns.status.selected) row['Status'] = doc.status; if (exportConfig.columns.remark.selected) row['Remark'] = doc.remark || ''; return row; })); } const ws = XLSX.utils.json_to_sheet(exportData); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, exportConfig.format === 'matrix' ? "Matrix_Report" : "Document_Export"); const timestamp = new Date().toISOString().split('T')[0]; const fileName = exportConfig.format === 'matrix' ? `EDMS_Matrix_Report_${timestamp}.xlsx` : `EDMS_Export_${timestamp}.xlsx`; XLSX.writeFile(wb, fileName); showExportModal.value = false; showToast('success', 'Export สำเร็จ', 'ดาวน์โหลดไฟล์เรียบร้อยแล้ว'); };
@@ -1009,6 +1069,5 @@ createApp({
   }
 }).mount('#app');
 </script>
-<div id="print-area"></div>
 </body>
 </html>
