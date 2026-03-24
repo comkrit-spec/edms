@@ -884,13 +884,28 @@ createApp({
        } catch (err) { loginLoading.value=false; }
     };
     
-    const loadData = async () => {
+  const loadData = async () => {
       loading.value=true;
-      if(!GAS_API_URL || GAS_API_URL === 'YOUR_WEB_APP_URL_HERE'){ setTimeout(()=>{ finishLoad(); },500); return; } 
+      if(!GAS_API_URL || GAS_API_URL === 'https://script.google.com/macros/s/AKfycbyosr6zPDvnZv-RiV6vZ2nxttAopuDAOuMnG_qB6_g9odldMQWuL6ZrKJg_I0W3QhCLHg/exec'){ setTimeout(()=>{ finishLoad(); },500); return; } 
       try {
-          const res = await apiCallGet('getInitialData');
-          if(res.success){ documents.value=res.documents; employees.value=res.employees; settings.value=res.settings; departments.value=sortThaiEng(res.departments); docTypes.value=sortThaiEng(res.docTypes); usersList.value=res.users||[]; logs.value=res.logs||[]; localStorage.setItem('edms_settings_cache', JSON.stringify(res.settings)); finishLoad(); } 
-      } catch (err) { console.error("Load Data Error:", err); loading.value=false; }
+          // เปลี่ยนจาก apiCallGet เป็น apiCall เพื่อบังคับใช้ POST
+          const res = await apiCall('getInitialData'); 
+          
+          if(res.success){ 
+             documents.value=res.documents; 
+             employees.value=res.employees; 
+             settings.value=res.settings; 
+             departments.value=sortThaiEng(res.departments); 
+             docTypes.value=sortThaiEng(res.docTypes); 
+             usersList.value=res.users||[]; 
+             logs.value=res.logs||[]; 
+             localStorage.setItem('edms_settings_cache', JSON.stringify(res.settings)); 
+             finishLoad(); 
+          } 
+      } catch (err) { 
+          console.error("Load Data Error:", err); 
+          loading.value=false; 
+      }
     };
     
     const finishLoad = () => { componentKey.value++; loading.value=false; if(currentPage.value===0) initCharts(); };
