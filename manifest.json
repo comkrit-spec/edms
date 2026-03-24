@@ -8,12 +8,12 @@
   "theme_color": "#0ea5e9",
   "icons": [
     {
-      "src": "https://www.asia-hydro.com/images/logo.png",
+      "src": "https://img.icons8.com/color/192/document--v1.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "https://www.asia-hydro.com/images/logo.png",
+      "src": "https://img.icons8.com/color/512/document--v1.png",
       "sizes": "512x512",
       "type": "image/png"
     }
