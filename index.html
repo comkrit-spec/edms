@@ -5,6 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>EDMS Enterprise</title>
+  
   <link id="favicon" rel="icon" href="https://img.icons8.com/color/48/document--v1.png" type="image/png">
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -754,7 +755,7 @@
 
 <script>
 // ⚠️ ใส่ Web App URL ของคุณตรงนี้!
-const GAS_API_URL = "https://script.google.com/macros/s/AKfycbx9Kod_KYZAt9gXiE_f-ekgDYe3TkXpEWc_KadVjiGRlucLnDAZYib6NKy63laJrPtg9Q/exec"; 
+const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyZGpAZc4INwpgWKZ9WNs1lTjsckuLcR3OofYwCDIZFhOOE5S_1t-6vPI7OmztYOrwVOw/exec"; 
 
 const apiCallGet = async (action) => {
     try {
@@ -797,7 +798,7 @@ createApp({
     const loading=ref(true), currentPage=ref(0), documents=ref([]), employees=ref([]), departments=ref([]), docTypes=ref([]), usersList=ref([]);
     const settings=ref({}), showModal=ref(false), showUserModal=ref(false), showImportModal=ref(false);
     
-    // ตัวแปร Pagination
+    // Pagination
     const itemsPerPage = ref(50);
     const currentListCurrentPage = ref(1);
 
@@ -842,7 +843,7 @@ createApp({
     let lastUsedDuration = null;
     let lastActivityTime = Date.now();
     let sessionCheckInterval = null;
-    let autoSyncInterval = null; // Auto Sync Variable
+    let autoSyncInterval = null; 
 
     const updateActivityTime = () => { lastActivityTime = Date.now(); };
     const initSessionTracker = () => {
@@ -867,7 +868,7 @@ createApp({
                     if(res.success){ documents.value = res.documents; employees.value = res.employees; }
                 } catch (err) {}
             }
-        }, 60000); // Sync every 1 min
+        }, 60000); 
     };
 
     const showToast = (type, title, msg = '') => { const id = notificationId++; notifications.value.push({ id, type, title, msg }); setTimeout(() => removeNotification(id), 3000); };
@@ -904,6 +905,7 @@ createApp({
     const setEndOfYear = () => { lastUsedDuration = null; if (!form.startDate) { const today = new Date(); form.startDate = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0'); } let y = form.startDate.split('-')[0]; form.expDate = y + '-12-31'; };
     const applyCustomDuration = () => { const val = parseInt(customDuration.value) || 0; if(val === 0) return; addDuration(val, customUnit.value); };
 
+    // 🟢 ระบบกรองข้อมูล (รวมรหัสชั่วคราว) 🟢
     const filteredEmployees = computed(() => {
         if ((currentPage.value === 1 || currentPage.value === 2) && !hasFilters.value) return [];
         let raw = documents.value || []; 
@@ -919,11 +921,25 @@ createApp({
         const q = searchQuery.value.trim().toLowerCase();
         const tags = searchTags.value.map(t => t.toLowerCase());
         if (tags.length > 0 || q) { raw = raw.filter(d => { const txt = (d.empId + d.firstName + d.lastName + d.nationalId).toLowerCase(); const matchTag = tags.some(tag => txt.includes(tag)); const matchQuery = q ? txt.includes(q) : false; return (tags.length > 0 ? matchTag : false) || matchQuery; }); }
-        const grp={}; raw.forEach(d=>{ if(!grp[d.empId]) grp[d.empId]={empId:d.empId,name:d.firstName+' '+d.lastName,dept:d.dept, nationalId:d.nationalId, isResigned:d.isResigned, docs:[]}; grp[d.empId].docs.push(d); });
+        
+        const grp={}; 
+        raw.forEach(d => { 
+            const groupKey = (d.empId && d.empId.trim() !== '') ? d.empId : (d.nationalId ? 'TEMP-' + d.nationalId : 'DOC-' + d.id);
+            if(!grp[groupKey]) {
+                grp[groupKey] = {
+                    empId: (d.empId && d.empId.trim() !== '') ? d.empId : 'รอรหัสพนักงาน',
+                    name: d.firstName + ' ' + d.lastName,
+                    dept: d.dept, nationalId: d.nationalId, isResigned: d.isResigned, docs: []
+                }; 
+            }
+            grp[groupKey].docs.push(d); 
+        });
+
         Object.values(grp).forEach(emp => { emp.docs.sort((a, b) => { const strA = String(a.docType || '').trim(); const strB = String(b.docType || '').trim(); const isEngA = /^[a-zA-Z]/.test(strA); const isEngB = /^[a-zA-Z]/.test(strB); if (isEngA && !isEngB) return -1; if (!isEngA && isEngB) return 1; return strA.localeCompare(strB, 'th-TH'); }); });
         return Object.values(grp).sort((a, b) => { return String(a.empId).localeCompare(String(b.empId), undefined, { numeric: true }); });
     });
 
+    // Pagination Computeds & Methods
     const totalPages = computed(() => { if (itemsPerPage.value === 'all') return 1; return Math.ceil(filteredEmployees.value.length / itemsPerPage.value); });
     const paginatedEmployees = computed(() => { if (itemsPerPage.value === 'all') return filteredEmployees.value; const start = (currentListCurrentPage.value - 1) * itemsPerPage.value; const end = start + itemsPerPage.value; return filteredEmployees.value.slice(start, end); });
     const changeListCurrentPage = (p) => { if (p >= 1 && p <= totalPages.value) currentListCurrentPage.value = p; window.scrollTo({ top: 0, behavior: 'smooth' }); };
@@ -961,10 +977,8 @@ createApp({
     };
     
     const finishLoad = () => { componentKey.value++; loading.value=false; if(currentPage.value===0) initCharts(); };
-    
     onMounted(() => { checkLogin(); updateTime(); timeInterval = setInterval(updateTime, 1000); initSessionTracker(); startAutoSync(); });
     onUnmounted(() => { clearInterval(timeInterval); clearInterval(sessionCheckInterval); if(autoSyncInterval) clearInterval(autoSyncInterval); window.removeEventListener('mousemove', updateActivityTime); window.removeEventListener('keydown', updateActivityTime); window.removeEventListener('click', updateActivityTime); window.removeEventListener('touchstart', updateActivityTime); });
-    
     watch(currentPage, (v) => { if(v===0) setTimeout(initCharts, 300); closeAllDropdowns(); dashboardFilter.value=null; });
     const logout = () => { Swal.fire({ title: 'Signing Out...', text: 'See you next time!', timer: 1500, showConfirmButton: false, icon: 'success', background: isDark.value ? '#1e293b' : '#fff', color: isDark.value ? '#cbd5e1' : '#334155' }).then(() => { isLoggedIn.value=false; localStorage.removeItem('edms_user_ent'); currentPage.value=0; }); };
     
@@ -978,11 +992,15 @@ createApp({
     const editDoc = (d) => { Object.assign(form, d); form.isNew = false; lastUsedDuration = null; if(d.startDate) { form.startDate = d.startDate; startDateText.value = formatDateToText(form.startDate); } if(d.expDate) { form.expDate = d.expDate; expDateText.value = formatDateToText(form.expDate); } showModal.value = true; };
     const removeFromQueue = (id) => { uploadQueue.value = uploadQueue.value.filter(item => item.id !== id); };
     
+    // 🟢 แก้ไข Submit: ถ้ารหัสพนักงานว่าง ให้ใส่ TEMP-บัตร ปชช. 🟢
     const submitForm = () => { 
         if(!form.nationalId || form.nationalId.length !== 13 || isNaN(form.nationalId)) { showToast('error', 'Validation Error', 'National ID must be 13 digits.'); return; } 
+        if (!form.empId || form.empId.trim() === '') { form.empId = 'TEMP-' + form.nationalId; }
+        
         const job = { id: Date.now(), type: 'upload', status: 'pending', data: JSON.parse(JSON.stringify(form)), title: form.firstName + ' ' + form.lastName, errorMsg: '' };
         uploadQueue.value.push(job); showToast('info', 'Queued', 'Added to upload queue'); showModal.value = false; resetForm(); processQueue();
     };
+    
     const deleteDoc = (id) => { let docName = "Document"; const targetId = String(id).trim(); for(const emp of employees.value) { if(emp.docs) { const d = emp.docs.find(x => String(x.id).trim() === targetId); if(d) { docName = d.docType; break; } } } Swal.fire({ title: 'ลบเอกสาร?', text: 'ยืนยันการลบ: ' + docName, icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', cancelButtonColor: '#64748b', confirmButtonText: 'ลบข้อมูล', cancelButtonText: 'ยกเลิก', background: isDark.value ? '#1e293b' : '#fff', color: isDark.value ? '#cbd5e1' : '#334155' }).then((result) => { if (result.isConfirmed) { const job = { id: Date.now(), type: 'delete', status: 'pending', data: targetId, title: docName, errorMsg: '' }; uploadQueue.value.push(job); isQueueExpanded.value = true; processQueue(); } }); };
     const confirmBulkDelete = (emp) => { const targetEmpId = String(emp.empId).trim(); Swal.fire({ title: 'ลบข้อมูล ' + emp.name + '?', html: 'เอกสารทั้งหมด <b>' + (emp.docs ? emp.docs.length : 0) + ' รายการ</b> จะถูกลบถาวร!<br>การกระทำนี้ไม่สามารถกู้คืนได้', icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', cancelButtonColor: '#64748b', confirmButtonText: 'ยืนยันลบทั้งหมด', cancelButtonText: 'ยกเลิก', background: isDark.value ? '#1e293b' : '#fff', color: isDark.value ? '#cbd5e1' : '#334155' }).then((result) => { if (result.isConfirmed) { const job = { id: Date.now(), type: 'bulk-delete', status: 'pending', data: targetEmpId, title: emp.name + ' (All Docs)', errorMsg: '' }; uploadQueue.value.push(job); isQueueExpanded.value = true; processQueue(); } }); };
     
@@ -1033,18 +1051,19 @@ createApp({
     const processImage = (e, cb) => { const f=e.target.files[0]; if(f){ compressImageFile(f, 500, 0.8, (compressedData) => { cb(compressedData); }); } };
     const saveAllSettings = async (logoData, bgData) => { loading.value=true; try { await apiCall('saveSettings', {settings: JSON.parse(JSON.stringify(settings.value)), depts: JSON.parse(JSON.stringify(departments.value)), types: JSON.parse(JSON.stringify(docTypes.value)), logoData: logoData, bgData: bgData}); loadData(); showToast('success', 'Settings Saved'); } catch(err) { loading.value=false; } };
     
+    // พรีวิวและดาวน์โหลดแบบ Base64 (หลบแท็บใหม่)
     const previewDoc = (d) => { if(d.fileUrl === '#') return; let url = d.fileUrl; if(url.includes('drive.google.com')) { if(url.includes('/view')) url = url.replace('/view', '/preview'); else if(url.includes('export=view')) url = url.replace(/\/uc\?export=view&id=([-\w]+)/, '/file/d/$1/preview'); else if(!url.includes('/preview') && !url.includes('export=')) url += '/preview'; } previewUrl.value = url; isPreviewPdf.value = true; };
     const handleProxyDownload = async (d) => { 
         if(d.fileUrl === '#') return; let fileId = ""; const match = d.fileUrl.match(/[-\w]{25,}/); if (match) fileId = match[0]; if(!fileId) { window.open(d.fileUrl, '_blank'); return; }
-        showToast('info', 'Requesting Download...', 'System is preparing your file');
-        try { const res = await apiCall('getFileContentForClient', d.fileUrl); if (res.success) { const a = document.createElement("a"); a.href = `data:${res.mimeType};base64,${res.data}`; a.download = res.name; document.body.appendChild(a); a.click(); document.body.removeChild(a); showToast('success', 'Download Ready', 'File downloaded successfully'); } else { showToast('error', 'Download Error', 'Check permissions or file existence'); } } catch(err) { showToast('error', 'Download Error', err.toString()); }
+        showToast('info', 'Requesting Download...', 'กำลังเตรียมไฟล์ของคุณ...');
+        try { const res = await apiCall('getFileContentForClient', d.fileUrl); if (res.success) { const a = document.createElement("a"); a.href = `data:${res.mimeType};base64,${res.data}`; a.download = res.name; document.body.appendChild(a); a.click(); document.body.removeChild(a); showToast('success', 'Download Ready', 'ดาวน์โหลดไฟล์สำเร็จ'); } else { showToast('error', 'Download Error', 'ไม่มีสิทธิ์เข้าถึงไฟล์นี้'); } } catch(err) { showToast('error', 'Download Error', err.toString()); }
     };
     const printFromPreview = () => { if(!previewUrl.value) return; handleProxyPrint(previewUrl.value); };
     const handleProxyPrint = async (docUrl) => {
         if(!docUrl || docUrl === '#') return; let isImage = false; if(docUrl.match(/\.(jpeg|jpg|gif|png|bmp|webp)($|\?)/i)) { isImage = true; }
-        if(isImage) { const printWindow = window.open('', '_blank'); printWindow.document.write(`<html><head><title>Print Image</title></head><body style="margin:0;display:flex;justify-content:center;align-items:center;height:100vh;"><img src="${docUrl}" onload="setTimeout(()=>{window.print();window.close();}, 500);" style="max-width:100%;max-height:100%;"></body></html>`); printWindow.document.close(); return; }
+        if(isImage) { const printWindow = window.open('', '_blank'); printWindow.document.write('<html><head><title>Print Image</title></head><body style="margin:0;display:flex;justify-content:center;align-items:center;"><img src="' + docUrl + '" onload="window.print();window.close()" style="max-width:100%;height:auto;"></body></html>'); printWindow.document.close(); return; }
         showToast('info', 'Preparing Print...', 'Converting PDF to High-Res Image');
-        try { const res = await apiCall('getFileContentForClient', docUrl); if (res.success) { const byteCharacters = atob(res.data); const byteNumbers = new Array(byteCharacters.length); for (let i = 0; i < byteCharacters.length; i++) { byteNumbers[i] = byteCharacters.charCodeAt(i); } const byteArray = new Uint8Array(byteNumbers); const blob = new Blob([byteArray], {type: res.mimeType || 'application/pdf'}); const blobUrl = URL.createObjectURL(blob); const iframe = document.createElement('iframe'); iframe.style.display = 'none'; iframe.src = blobUrl; document.body.appendChild(iframe); iframe.onload = () => { setTimeout(() => { iframe.contentWindow.focus(); iframe.contentWindow.print(); setTimeout(() => { document.body.removeChild(iframe); URL.revokeObjectURL(blobUrl); }, 30000); }, 500); }; showToast('success', 'Print Job Sent'); } else { window.open(docUrl, '_blank'); } } catch(err) { showToast('error', 'Print Error'); window.open(docUrl, '_blank'); }
+        try { const res = await apiCall('getFileContentForClient', docUrl); if (res.success) { const binaryString = window.atob(res.data); const len = binaryString.length; const bytes = new Uint8Array(len); for (let i = 0; i < len; i++) { bytes[i] = binaryString.charCodeAt(i); } const loadingTask = pdfjsLib.getDocument({data: bytes}); const pdf = await loadingTask.promise; const printArea = document.getElementById('print-area'); if (printArea) { printArea.innerHTML = ''; for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) { const page = await pdf.getPage(pageNum); const viewport = page.getViewport({scale: 2.0}); const canvas = document.createElement('canvas'); const context = canvas.getContext('2d'); canvas.height = viewport.height; canvas.width = viewport.width; await page.render({canvasContext: context, viewport: viewport}).promise; printArea.appendChild(canvas); } window.print(); printArea.innerHTML = ''; } showToast('success', 'Print Job Sent'); } else { const printWindow = window.open('', '_blank'); printWindow.document.write('<html><head><title>Print</title></head><body style="margin:0;display:flex;justify-content:center;align-items:center;"><img src="' + docUrl + '" onload="window.print();window.close()" style="max-width:100%;height:auto;" onerror="window.close()"></body></html>'); printWindow.document.close(); } } catch(err) { showToast('error', 'Print Error'); }
     };
 
     const executeAdvancedExport = () => { let sourceData = []; if (exportConfig.scope === 'filtered') { sourceData = filteredEmployees.value; } else { const allDocsGrp = {}; documents.value.forEach(d => { if(!allDocsGrp[d.empId]) allDocsGrp[d.empId] = {empId: d.empId, name: d.firstName+' '+d.lastName, dept: d.dept, nationalId: d.nationalId, docs: []}; allDocsGrp[d.empId].docs.push(d); }); sourceData = Object.values(allDocsGrp); } if (sourceData.length === 0) { showToast('warning', 'ไม่มีข้อมูลสำหรับ Export'); return; } let exportData = []; if (exportConfig.format === 'matrix') { const docTypesSet = new Set(); sourceData.forEach(emp => { emp.docs.forEach(doc => docTypesSet.add(doc.docType)); }); const dynamicHeaders = Array.from(docTypesSet).sort(); exportData = sourceData.map(emp => { let row = { 'Emp ID': emp.empId, 'Name': emp.name, 'Department': emp.dept }; dynamicHeaders.forEach(header => { row[header] = ''; }); emp.docs.forEach(doc => { let dateStr = formatDate(doc.expDate); if (row[doc.docType] !== '') { row[doc.docType] += ', ' + dateStr; } else { row[doc.docType] = dateStr; } }); return row; }); } else { exportData = sourceData.flatMap(emp => emp.docs.map(doc => { let row = {}; if (exportConfig.columns.empId.selected) row['Emp ID'] = emp.empId; if (exportConfig.columns.nationalId.selected) row['National ID'] = emp.nationalId || '-'; if (exportConfig.columns.name.selected) row['Name'] = emp.name; if (exportConfig.columns.dept.selected) row['Department'] = emp.dept; if (exportConfig.columns.docType.selected) row['Doc Type'] = doc.docType; if (exportConfig.columns.startDate.selected) row['Start Date'] = formatDate(doc.startDate); if (exportConfig.columns.expDate.selected) row['Expire Date'] = formatDate(doc.expDate); if (exportConfig.columns.daysLeft.selected) row['Days Left'] = doc.daysLeft; if (exportConfig.columns.status.selected) row['Status'] = doc.status; if (exportConfig.columns.remark.selected) row['Remark'] = doc.remark || ''; return row; })); } const ws = XLSX.utils.json_to_sheet(exportData); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, exportConfig.format === 'matrix' ? "Matrix_Report" : "Document_Export"); const timestamp = new Date().toISOString().split('T')[0]; const fileName = exportConfig.format === 'matrix' ? `EDMS_Matrix_Report_${timestamp}.xlsx` : `EDMS_Export_${timestamp}.xlsx`; XLSX.writeFile(wb, fileName); showExportModal.value = false; showToast('success', 'Export สำเร็จ', 'ดาวน์โหลดไฟล์เรียบร้อยแล้ว'); };
@@ -1076,5 +1095,6 @@ createApp({
   }
 }).mount('#app');
 </script>
+<div id="print-area"></div>
 </body>
 </html>
