@@ -378,17 +378,18 @@ createApp({
         } catch (err) { console.error("Payload Serialize Error:", err); onFailure(err); }
     };
 
-    const toggleResignation = async (id, action) => { 
-        const isResign = action === 'resign';
-        Swal.fire({ title: isResign ? 'ยืนยันการลาออก?' : 'ยืนยันคืนสภาพพนักงาน?', text: isResign ? "พนักงานจะถูกย้ายไปสถานะลาออก" : "พนักงานจะกลับมามีสถานะปกติ", icon: isResign ? 'warning' : 'question', showCancelButton: true, confirmButtonColor: isResign ? '#ef4444' : '#10b981', cancelButtonColor: '#64748b', confirmButtonText: isResign ? 'ยืนยันลาออก' : 'ยืนยันคืนสภาพ', cancelButtonText: 'ยกเลิก', background: isDark.value ? '#1e293b' : '#fff', color: isDark.value ? '#cbd5e1' : '#334155' }).then(async (result) => {
-            if (result.isConfirmed) {
-                const emp = employees.value.find(e => e.empId === id); if (emp) emp.isResigned = isResign;
-                documents.value.forEach(d => { if(d.empId === id) d.isResigned = isResign; });
-                showToast('info', 'Updating...', 'กำลังอัปเดตสถานะ');
-                try { const res = await apiCall('toggleResignation', {empId: id, action: action}); documents.value = res.documents; employees.value = res.employees; showToast('success', 'Completed', isResign ? 'Marked as Resigned' : 'Employee Restored'); } catch(err) { showToast('error', 'Update Failed'); }
-            }
-        });
-    };
+    // โค้ดที่ถูกต้อง (เปลี่ยนชื่อให้ตรงกับ HTML)
+const toggleResign = async (id, action) => { 
+    const isResign = action === 'resign';
+    Swal.fire({ title: isResign ? 'ยืนยันการลาออก?' : 'ยืนยันคืนสภาพพนักงาน?', text: isResign ? "พนักงานจะถูกย้ายไปสถานะลาออก" : "พนักงานจะกลับมามีสถานะปกติ", icon: isResign ? 'warning' : 'question', showCancelButton: true, confirmButtonColor: isResign ? '#ef4444' : '#10b981', cancelButtonColor: '#64748b', confirmButtonText: isResign ? 'ยืนยันลาออก' : 'ยืนยันคืนสภาพ', cancelButtonText: 'ยกเลิก', background: isDark.value ? '#1e293b' : '#fff', color: isDark.value ? '#cbd5e1' : '#334155' }).then(async (result) => {
+        if (result.isConfirmed) {
+            const emp = employees.value.find(e => e.empId === id); if (emp) emp.isResigned = isResign;
+            documents.value.forEach(d => { if(d.empId === id) d.isResigned = isResign; });
+            showToast('info', 'Updating...', 'กำลังอัปเดตสถานะ');
+            try { const res = await apiCall('toggleResignation', {empId: id, action: action}); documents.value = res.documents; employees.value = res.employees; showToast('success', 'Completed', isResign ? 'Marked as Resigned' : 'Employee Restored'); } catch(err) { showToast('error', 'Update Failed'); }
+        }
+    });
+};
 
     // Settings
     const saveSettings = async () => { loading.value=true; try { await apiCall('saveSettings', {settings: JSON.parse(JSON.stringify(settings.value)), depts: JSON.parse(JSON.stringify(departments.value)), types: JSON.parse(JSON.stringify(docTypes.value)), logoData: null, bgData: null}); loadData(); showToast('success', 'Settings Saved'); } catch(err) { loading.value=false; } };
