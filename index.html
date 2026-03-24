@@ -148,13 +148,20 @@
 // ⚠️ สำคัญมาก: เปลี่ยนตรงนี้ให้เป็น Web App URL ที่คุณได้จาก Google Apps Script ⚠️
 const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyosr6zPDvnZv-RiV6vZ2nxttAopuDAOuMnG_qB6_g9odldMQWuL6ZrKJg_I0W3QhCLHg/exec"; 
 
+// เปลี่ยนวิธีส่งข้อมูลจาก JSON เป็น URLSearchParams (Form Data)
 const apiCall = async (action, data = null) => {
     try {
+        const formData = new URLSearchParams();
+        formData.append('action', action);
+        if (data !== null) {
+            formData.append('data', JSON.stringify(data));
+        }
+
         const response = await fetch(GAS_API_URL, {
             method: 'POST',
-            headers: { 'Content-Type': 'text/plain' }, 
-            body: JSON.stringify({ action: action, data: data })
+            body: formData // ส่งเป็น Form Data จะไม่ติด CORS Preflight
         });
+        
         const result = await response.json();
         if(!result) throw new Error("Empty response from server");
         return result;
