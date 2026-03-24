@@ -755,7 +755,7 @@
 
 <script>
 // ⚠️ ใส่ Web App URL ของคุณตรงนี้!
-const GAS_API_URL = "https://script.google.com/macros/s/AKfycbx_eSJZuEH8ZVPhpVDBbpNFcFa3oPG6Mma1jmI81bebXzL_gNDpxbQbNRyOAnQ0jlbc/exec"; 
+const GAS_API_URL = "https://script.google.com/macros/s/AKfycbx9Kod_KYZAt9gXiE_f-ekgDYe3TkXpEWc_KadVjiGRlucLnDAZYib6NKy63laJrPtg9Q/exec"; 
 
 const apiCallGet = async (action) => {
     try {
@@ -843,6 +843,8 @@ createApp({
     let lastUsedDuration = null;
     let lastActivityTime = Date.now();
     let sessionCheckInterval = null;
+    let autoSyncInterval = null; // Auto Sync Variable
+
     const updateActivityTime = () => { lastActivityTime = Date.now(); };
     const initSessionTracker = () => {
         window.addEventListener('mousemove', updateActivityTime); window.addEventListener('keydown', updateActivityTime); window.addEventListener('click', updateActivityTime); window.addEventListener('touchstart', updateActivityTime);
@@ -851,11 +853,24 @@ createApp({
                 const timeoutMins = parseInt(settings.value.sessionTimeout) || 30; 
                 if(Date.now() - lastActivityTime > timeoutMins * 60000) {
                     isLoggedIn.value = false; localStorage.removeItem('edms_user_ent'); currentPage.value = 0;
-                    Swal.fire({ title: 'หมดเวลาการเชื่อมต่อ', text: 'คุณไม่ได้ใช้งานระบบเป็นระยะเวลานาน', icon: 'warning', confirmButtonText: 'เข้าสู่ระบบใหม่', confirmButtonColor: '#0ea5e9', background: isDark.value ? '#1e293b' : '#fff', color: isDark.value ? '#cbd5e1' : '#334155' });
+                    Swal.fire({ title: 'หมดเวลาการเชื่อมต่อ', text: 'คุณไม่ได้ใช้งานระบบเป็นระยะเวลานาน', icon: 'warning', confirmButtonText: 'เข้าสู่ระบบใหม่', confirmButtonColor: '#0ea5e9', background: isDark.value ? '#1e293b' : '#fff', color: isDark.value ? '#cbd5e1' : '#334155', allowOutsideClick: false }).then(() => { window.location.reload(); });
                 }
             }
-        }, 30000); 
+        }, 10000); 
     };
+
+    const startAutoSync = () => {
+        if (autoSyncInterval) clearInterval(autoSyncInterval);
+        autoSyncInterval = setInterval(async () => {
+            if (isLoggedIn.value && !isProcessingQueue.value) {
+                try {
+                    const res = await apiCallGet('getInitialData');
+                    if(res.success){ documents.value = res.documents; employees.value = res.employees; }
+                } catch (err) {}
+            }
+        }, 60000); // Sync every 1 min
+    };
+
     const showToast = (type, title, msg = '') => { const id = notificationId++; notifications.value.push({ id, type, title, msg }); setTimeout(() => removeNotification(id), 3000); };
     const removeNotification = (id) => { notifications.value = notifications.value.filter(n => n.id !== id); };
     const toggleTheme = () => { isDark.value = !isDark.value; if(isDark.value) document.documentElement.classList.add('dark'); else document.documentElement.classList.remove('dark'); localStorage.setItem('edms_theme', isDark.value ? 'dark' : 'light'); };
@@ -910,27 +925,10 @@ createApp({
         return Object.values(grp).sort((a, b) => { return String(a.empId).localeCompare(String(b.empId), undefined, { numeric: true }); });
     });
 
-    // Pagination Computeds & Methods
-    const totalPages = computed(() => {
-        if (itemsPerPage.value === 'all') return 1;
-        return Math.ceil(filteredEmployees.value.length / itemsPerPage.value);
-    });
-
-    const paginatedEmployees = computed(() => {
-        if (itemsPerPage.value === 'all') return filteredEmployees.value;
-        const start = (currentListCurrentPage.value - 1) * itemsPerPage.value;
-        const end = start + itemsPerPage.value;
-        return filteredEmployees.value.slice(start, end);
-    });
-
-    const changeListCurrentPage = (p) => {
-        if (p >= 1 && p <= totalPages.value) currentListCurrentPage.value = p;
-        window.scrollTo({ top: 0, behavior: 'smooth' }); 
-    };
-
-    watch([searchQuery, searchTags, selectedDepts, selectedStatuses, selectedDocTypes, itemsPerPage, filterStartDate, filterEndDate], () => {
-        currentListCurrentPage.value = 1;
-    });
+    const totalPages = computed(() => { if (itemsPerPage.value === 'all') return 1; return Math.ceil(filteredEmployees.value.length / itemsPerPage.value); });
+    const paginatedEmployees = computed(() => { if (itemsPerPage.value === 'all') return filteredEmployees.value; const start = (currentListCurrentPage.value - 1) * itemsPerPage.value; const end = start + itemsPerPage.value; return filteredEmployees.value.slice(start, end); });
+    const changeListCurrentPage = (p) => { if (p >= 1 && p <= totalPages.value) currentListCurrentPage.value = p; window.scrollTo({ top: 0, behavior: 'smooth' }); };
+    watch([searchQuery, searchTags, selectedDepts, selectedStatuses, selectedDocTypes, itemsPerPage, filterStartDate, filterEndDate], () => { currentListCurrentPage.value = 1; });
 
     const toggleSelectAll = (type) => { if (type === 'dept') { if (selectedDepts.value.length === departments.value.length) selectedDepts.value = []; else selectedDepts.value = [...departments.value]; } else if (type === 'type') { if (selectedDocTypes.value.length === docTypes.value.length) selectedDocTypes.value = []; else selectedDocTypes.value = [...docTypes.value]; } else if (type === 'status') { if (selectedStatuses.value.length === 3) selectedStatuses.value = []; else selectedStatuses.value = ['Active', 'Warning', 'Expired']; } };
     const addItem = (type) => { if(!newItemInput.value) return; if(type==='dept') { departments.value.push(newItemInput.value); departments.value = sortThaiEng(departments.value); } if(type==='type') { docTypes.value.push(newItemInput.value); docTypes.value = sortThaiEng(docTypes.value); } newItemInput.value = ''; };
@@ -964,8 +962,10 @@ createApp({
     };
     
     const finishLoad = () => { componentKey.value++; loading.value=false; if(currentPage.value===0) initCharts(); };
-    onMounted(() => { checkLogin(); updateTime(); timeInterval = setInterval(updateTime, 1000); initSessionTracker(); });
-    onUnmounted(() => { clearInterval(timeInterval); clearInterval(sessionCheckInterval); window.removeEventListener('mousemove', updateActivityTime); window.removeEventListener('keydown', updateActivityTime); window.removeEventListener('click', updateActivityTime); window.removeEventListener('touchstart', updateActivityTime); });
+    
+    onMounted(() => { checkLogin(); updateTime(); timeInterval = setInterval(updateTime, 1000); initSessionTracker(); startAutoSync(); });
+    onUnmounted(() => { clearInterval(timeInterval); clearInterval(sessionCheckInterval); if(autoSyncInterval) clearInterval(autoSyncInterval); window.removeEventListener('mousemove', updateActivityTime); window.removeEventListener('keydown', updateActivityTime); window.removeEventListener('click', updateActivityTime); window.removeEventListener('touchstart', updateActivityTime); });
+    
     watch(currentPage, (v) => { if(v===0) setTimeout(initCharts, 300); closeAllDropdowns(); dashboardFilter.value=null; });
     const logout = () => { Swal.fire({ title: 'Signing Out...', text: 'See you next time!', timer: 1500, showConfirmButton: false, icon: 'success', background: isDark.value ? '#1e293b' : '#fff', color: isDark.value ? '#cbd5e1' : '#334155' }).then(() => { isLoggedIn.value=false; localStorage.removeItem('edms_user_ent'); currentPage.value=0; }); };
     
@@ -1025,83 +1025,27 @@ createApp({
         });
     };
 
-    // 🟢 ระบบบีบอัดรูปภาพก่อนอัปโหลด 🟢
-    const compressImageFile = (file, maxWidth, quality, callback) => {
-        const reader = new FileReader();
-        reader.onload = (event) => {
-            const img = new Image();
-            img.onload = () => {
-                let width = img.width, height = img.height;
-                if (width > maxWidth) { height = Math.round(height * (maxWidth / width)); width = maxWidth; }
-                const canvas = document.createElement('canvas'); canvas.width = width; canvas.height = height;
-                const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, width, height);
-                callback(canvas.toDataURL('image/jpeg', quality));
-            };
-            img.src = event.target.result;
-        };
-        reader.readAsDataURL(file);
-    };
-
+    const compressImageFile = (file, maxWidth, quality, callback) => { const reader = new FileReader(); reader.onload = (event) => { const img = new Image(); img.onload = () => { let width = img.width, height = img.height; if (width > maxWidth) { height = Math.round(height * (maxWidth / width)); width = maxWidth; } const canvas = document.createElement('canvas'); canvas.width = width; canvas.height = height; const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, width, height); callback(canvas.toDataURL('image/jpeg', quality)); }; img.src = event.target.result; }; reader.readAsDataURL(file); };
     const saveSettings = async () => { loading.value=true; try { await apiCall('saveSettings', {settings: JSON.parse(JSON.stringify(settings.value)), depts: JSON.parse(JSON.stringify(departments.value)), types: JSON.parse(JSON.stringify(docTypes.value)), logoData: null, bgData: null}); loadData(); showToast('success', 'Settings Saved'); } catch(err) { loading.value=false; } };
     const handleFileUpload = (e) => { const f = e.target.files[0]; if(f){ processFile(f); } };
     const handleDrop = (e) => { isDragging.value = false; const f = e.dataTransfer.files[0]; if(f) processFile(f); };
-    
-    const processFile = (f) => { 
-        const MAX_SIZE = 10 * 1024 * 1024; 
-        if (f.size > MAX_SIZE) { showToast('error', 'File Too Large', 'ขนาดไฟล์สูงสุดคือ 10MB'); return; } 
-        if (f.type.startsWith('image/')) {
-            showToast('info', 'Compressing...', 'กำลังบีบอัดรูปภาพ...');
-            compressImageFile(f, 1600, 0.7, (compressedBase64) => {
-                form.fileData = compressedBase64;
-                form.fileName = f.name.replace(/\.[^/.]+$/, "") + ".jpg"; 
-            });
-        } else {
-            const r = new FileReader(); r.onload = ev => { form.fileData = ev.target.result; form.fileName = f.name; }; r.readAsDataURL(f); 
-        }
-    };
-    
-    const handleBgUpload = (e) => {
-        const f = e.target.files[0];
-        if(!f) return;
-        showToast('info', 'Compressing...', 'กำลังปรับขนาดภาพพื้นหลัง...');
-        compressImageFile(f, 1920, 0.8, (compressedData) => { saveAllSettings(null, compressedData); });
-    };
-    
-    const processImage = (e, cb) => { 
-        const f=e.target.files[0]; 
-        if(f){ compressImageFile(f, 500, 0.8, (compressedData) => { cb(compressedData); }); } 
-    };
-    
+    const processFile = (f) => { const MAX_SIZE = 10 * 1024 * 1024; if (f.size > MAX_SIZE) { showToast('error', 'File Too Large', 'ขนาดไฟล์สูงสุดคือ 10MB'); return; } if (f.type.startsWith('image/')) { showToast('info', 'Compressing...', 'กำลังบีบอัดรูปภาพ...'); compressImageFile(f, 1600, 0.7, (compressedBase64) => { form.fileData = compressedBase64; form.fileName = f.name.replace(/\.[^/.]+$/, "") + ".jpg"; }); } else { const r = new FileReader(); r.onload = ev => { form.fileData = ev.target.result; form.fileName = f.name; }; r.readAsDataURL(f); } };
+    const handleBgUpload = (e) => { const f = e.target.files[0]; if(!f) return; showToast('info', 'Compressing...', 'กำลังปรับขนาดภาพพื้นหลัง...'); compressImageFile(f, 1920, 0.8, (compressedData) => { saveAllSettings(null, compressedData); }); };
+    const processImage = (e, cb) => { const f=e.target.files[0]; if(f){ compressImageFile(f, 500, 0.8, (compressedData) => { cb(compressedData); }); } };
     const saveAllSettings = async (logoData, bgData) => { loading.value=true; try { await apiCall('saveSettings', {settings: JSON.parse(JSON.stringify(settings.value)), depts: JSON.parse(JSON.stringify(departments.value)), types: JSON.parse(JSON.stringify(docTypes.value)), logoData: logoData, bgData: bgData}); loadData(); showToast('success', 'Settings Saved'); } catch(err) { loading.value=false; } };
     
-    // 🟢 ดาวน์โหลด และ ปริ้น ดึงผ่าน Base64 ให้ประสบการณ์เนียนที่สุด 🟢
     const previewDoc = (d) => { if(d.fileUrl === '#') return; let url = d.fileUrl; if(url.includes('drive.google.com')) { if(url.includes('/view')) url = url.replace('/view', '/preview'); else if(url.includes('export=view')) url = url.replace(/\/uc\?export=view&id=([-\w]+)/, '/file/d/$1/preview'); else if(!url.includes('/preview') && !url.includes('export=')) url += '/preview'; } previewUrl.value = url; isPreviewPdf.value = true; };
-    
     const handleProxyDownload = async (d) => { 
         if(d.fileUrl === '#') return; let fileId = ""; const match = d.fileUrl.match(/[-\w]{25,}/); if (match) fileId = match[0]; if(!fileId) { window.open(d.fileUrl, '_blank'); return; }
         showToast('info', 'Requesting Download...', 'System is preparing your file');
-        try { 
-            const res = await apiCall('getFileContentForClient', d.fileUrl); 
-            if (res.success) { 
-                const a = document.createElement("a"); a.href = `data:${res.mimeType};base64,${res.data}`; a.download = res.name; document.body.appendChild(a); a.click(); document.body.removeChild(a); showToast('success', 'Download Ready', 'File downloaded successfully'); 
-            } else { showToast('error', 'Download Error', 'Check permissions or file existence'); } 
-        } catch(err) { showToast('error', 'Download Error', err.toString()); }
+        try { const res = await apiCall('getFileContentForClient', d.fileUrl); if (res.success) { const a = document.createElement("a"); a.href = `data:${res.mimeType};base64,${res.data}`; a.download = res.name; document.body.appendChild(a); a.click(); document.body.removeChild(a); showToast('success', 'Download Ready', 'File downloaded successfully'); } else { showToast('error', 'Download Error', 'Check permissions or file existence'); } } catch(err) { showToast('error', 'Download Error', err.toString()); }
     };
-    
     const printFromPreview = () => { if(!previewUrl.value) return; handleProxyPrint(previewUrl.value); };
-    
     const handleProxyPrint = async (docUrl) => {
         if(!docUrl || docUrl === '#') return; let isImage = false; if(docUrl.match(/\.(jpeg|jpg|gif|png|bmp|webp)($|\?)/i)) { isImage = true; }
-        if(isImage) { const printWindow = window.open('', '_blank'); printWindow.document.write('<html><head><title>Print Image</title></head><body style="margin:0;display:flex;justify-content:center;align-items:center;"><img src="' + docUrl + '" onload="window.print();window.close()" style="max-width:100%;height:auto;"></body></html>'); printWindow.document.close(); return; }
+        if(isImage) { const printWindow = window.open('', '_blank'); printWindow.document.write(`<html><head><title>Print Image</title></head><body style="margin:0;display:flex;justify-content:center;align-items:center;height:100vh;"><img src="${docUrl}" onload="setTimeout(()=>{window.print();window.close();}, 500);" style="max-width:100%;max-height:100%;"></body></html>`); printWindow.document.close(); return; }
         showToast('info', 'Preparing Print...', 'Converting PDF to High-Res Image');
-        try { 
-            const res = await apiCall('getFileContentForClient', docUrl); 
-            if (res.success) { 
-                const binaryString = window.atob(res.data); const len = binaryString.length; const bytes = new Uint8Array(len); for (let i = 0; i < len; i++) { bytes[i] = binaryString.charCodeAt(i); } const loadingTask = pdfjsLib.getDocument({data: bytes}); const pdf = await loadingTask.promise; const printArea = document.getElementById('print-area'); if (printArea) { printArea.innerHTML = ''; for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) { const page = await pdf.getPage(pageNum); const viewport = page.getViewport({scale: 2.0}); const canvas = document.createElement('canvas'); const context = canvas.getContext('2d'); canvas.height = viewport.height; canvas.width = viewport.width; await page.render({canvasContext: context, viewport: viewport}).promise; printArea.appendChild(canvas); } window.print(); printArea.innerHTML = ''; } showToast('success', 'Print Job Sent'); 
-            } else { 
-                const printWindow = window.open('', '_blank'); printWindow.document.write('<html><head><title>Print</title></head><body style="margin:0;display:flex;justify-content:center;align-items:center;"><img src="' + docUrl + '" onload="window.print();window.close()" style="max-width:100%;height:auto;" onerror="window.close()"></body></html>'); printWindow.document.close(); 
-            } 
-        } catch(err) { showToast('error', 'Print Error'); }
+        try { const res = await apiCall('getFileContentForClient', docUrl); if (res.success) { const byteCharacters = atob(res.data); const byteNumbers = new Array(byteCharacters.length); for (let i = 0; i < byteCharacters.length; i++) { byteNumbers[i] = byteCharacters.charCodeAt(i); } const byteArray = new Uint8Array(byteNumbers); const blob = new Blob([byteArray], {type: res.mimeType || 'application/pdf'}); const blobUrl = URL.createObjectURL(blob); const iframe = document.createElement('iframe'); iframe.style.display = 'none'; iframe.src = blobUrl; document.body.appendChild(iframe); iframe.onload = () => { setTimeout(() => { iframe.contentWindow.focus(); iframe.contentWindow.print(); setTimeout(() => { document.body.removeChild(iframe); URL.revokeObjectURL(blobUrl); }, 30000); }, 500); }; showToast('success', 'Print Job Sent'); } else { window.open(docUrl, '_blank'); } } catch(err) { showToast('error', 'Print Error'); window.open(docUrl, '_blank'); }
     };
 
     const executeAdvancedExport = () => { let sourceData = []; if (exportConfig.scope === 'filtered') { sourceData = filteredEmployees.value; } else { const allDocsGrp = {}; documents.value.forEach(d => { if(!allDocsGrp[d.empId]) allDocsGrp[d.empId] = {empId: d.empId, name: d.firstName+' '+d.lastName, dept: d.dept, nationalId: d.nationalId, docs: []}; allDocsGrp[d.empId].docs.push(d); }); sourceData = Object.values(allDocsGrp); } if (sourceData.length === 0) { showToast('warning', 'ไม่มีข้อมูลสำหรับ Export'); return; } let exportData = []; if (exportConfig.format === 'matrix') { const docTypesSet = new Set(); sourceData.forEach(emp => { emp.docs.forEach(doc => docTypesSet.add(doc.docType)); }); const dynamicHeaders = Array.from(docTypesSet).sort(); exportData = sourceData.map(emp => { let row = { 'Emp ID': emp.empId, 'Name': emp.name, 'Department': emp.dept }; dynamicHeaders.forEach(header => { row[header] = ''; }); emp.docs.forEach(doc => { let dateStr = formatDate(doc.expDate); if (row[doc.docType] !== '') { row[doc.docType] += ', ' + dateStr; } else { row[doc.docType] = dateStr; } }); return row; }); } else { exportData = sourceData.flatMap(emp => emp.docs.map(doc => { let row = {}; if (exportConfig.columns.empId.selected) row['Emp ID'] = emp.empId; if (exportConfig.columns.nationalId.selected) row['National ID'] = emp.nationalId || '-'; if (exportConfig.columns.name.selected) row['Name'] = emp.name; if (exportConfig.columns.dept.selected) row['Department'] = emp.dept; if (exportConfig.columns.docType.selected) row['Doc Type'] = doc.docType; if (exportConfig.columns.startDate.selected) row['Start Date'] = formatDate(doc.startDate); if (exportConfig.columns.expDate.selected) row['Expire Date'] = formatDate(doc.expDate); if (exportConfig.columns.daysLeft.selected) row['Days Left'] = doc.daysLeft; if (exportConfig.columns.status.selected) row['Status'] = doc.status; if (exportConfig.columns.remark.selected) row['Remark'] = doc.remark || ''; return row; })); } const ws = XLSX.utils.json_to_sheet(exportData); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, exportConfig.format === 'matrix' ? "Matrix_Report" : "Document_Export"); const timestamp = new Date().toISOString().split('T')[0]; const fileName = exportConfig.format === 'matrix' ? `EDMS_Matrix_Report_${timestamp}.xlsx` : `EDMS_Export_${timestamp}.xlsx`; XLSX.writeFile(wb, fileName); showExportModal.value = false; showToast('success', 'Export สำเร็จ', 'ดาวน์โหลดไฟล์เรียบร้อยแล้ว'); };
@@ -1133,6 +1077,5 @@ createApp({
   }
 }).mount('#app');
 </script>
-<div id="print-area"></div>
 </body>
 </html>
