@@ -859,16 +859,22 @@ createApp({
         }, 10000); 
     };
 
+// 🟢 ระบบดึงข้อมูลใหม่แบบเงียบๆ ทุก 10 วินาที 🟢
     const startAutoSync = () => {
         if (autoSyncInterval) clearInterval(autoSyncInterval);
         autoSyncInterval = setInterval(async () => {
+            // ดึงข้อมูลเมื่อผู้ใช้ล็อกอินอยู่ และไม่ได้กำลังอัปโหลดไฟล์
             if (isLoggedIn.value && !isProcessingQueue.value) {
                 try {
                     const res = await apiCallGet('getInitialData');
-                    if(res.success){ documents.value = res.documents; employees.value = res.employees; }
+                    if(res.success){ 
+                        // เมื่อเครื่องอื่นแก้ไข ข้อมูลในหน้าจอเราจะเปลี่ยนตามทันที
+                        documents.value = res.documents; 
+                        employees.value = res.employees; 
+                    }
                 } catch (err) {}
             }
-        }, 60000); 
+        }, 10000); // 10000 มิลลิวินาที = 10 วินาที
     };
 
     const showToast = (type, title, msg = '') => { const id = notificationId++; notifications.value.push({ id, type, title, msg }); setTimeout(() => removeNotification(id), 3000); };
@@ -1059,11 +1065,62 @@ createApp({
         try { const res = await apiCall('getFileContentForClient', d.fileUrl); if (res.success) { const a = document.createElement("a"); a.href = `data:${res.mimeType};base64,${res.data}`; a.download = res.name; document.body.appendChild(a); a.click(); document.body.removeChild(a); showToast('success', 'Download Ready', 'ดาวน์โหลดไฟล์สำเร็จ'); } else { showToast('error', 'Download Error', 'ไม่มีสิทธิ์เข้าถึงไฟล์นี้'); } } catch(err) { showToast('error', 'Download Error', err.toString()); }
     };
     const printFromPreview = () => { if(!previewUrl.value) return; handleProxyPrint(previewUrl.value); };
+  // 🟢 ระบบปริ้น Native (ไม่ใช้การแปลงเป็นรูปภาพอีกต่อไป) 🟢
     const handleProxyPrint = async (docUrl) => {
-        if(!docUrl || docUrl === '#') return; let isImage = false; if(docUrl.match(/\.(jpeg|jpg|gif|png|bmp|webp)($|\?)/i)) { isImage = true; }
-        if(isImage) { const printWindow = window.open('', '_blank'); printWindow.document.write('<html><head><title>Print Image</title></head><body style="margin:0;display:flex;justify-content:center;align-items:center;"><img src="' + docUrl + '" onload="window.print();window.close()" style="max-width:100%;height:auto;"></body></html>'); printWindow.document.close(); return; }
-        showToast('info', 'Preparing Print...', 'Converting PDF to High-Res Image');
-        try { const res = await apiCall('getFileContentForClient', docUrl); if (res.success) { const binaryString = window.atob(res.data); const len = binaryString.length; const bytes = new Uint8Array(len); for (let i = 0; i < len; i++) { bytes[i] = binaryString.charCodeAt(i); } const loadingTask = pdfjsLib.getDocument({data: bytes}); const pdf = await loadingTask.promise; const printArea = document.getElementById('print-area'); if (printArea) { printArea.innerHTML = ''; for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) { const page = await pdf.getPage(pageNum); const viewport = page.getViewport({scale: 2.0}); const canvas = document.createElement('canvas'); const context = canvas.getContext('2d'); canvas.height = viewport.height; canvas.width = viewport.width; await page.render({canvasContext: context, viewport: viewport}).promise; printArea.appendChild(canvas); } window.print(); printArea.innerHTML = ''; } showToast('success', 'Print Job Sent'); } else { const printWindow = window.open('', '_blank'); printWindow.document.write('<html><head><title>Print</title></head><body style="margin:0;display:flex;justify-content:center;align-items:center;"><img src="' + docUrl + '" onload="window.print();window.close()" style="max-width:100%;height:auto;" onerror="window.close()"></body></html>'); printWindow.document.close(); } } catch(err) { showToast('error', 'Print Error'); }
+        if(!docUrl || docUrl === '#') return; 
+        
+        let isImage = false; 
+        if(docUrl.match(/\.(jpeg|jpg|gif|png|bmp|webp)($|\?)/i)) { isImage = true; }
+        
+        // ถ้าเป็นรูปภาพ เปิดแท็บใหม่สั่งปริ้นรูปภาพตรงๆ
+        if(isImage) { 
+            const printWindow = window.open('', '_blank'); 
+            printWindow.document.write(`<html><head><title>Print Image</title></head><body style="margin:0;display:flex;justify-content:center;align-items:center;height:100vh;"><img src="${docUrl}" onload="setTimeout(()=>{window.print();window.close();}, 500);" style="max-width:100%;max-height:100%;"></body></html>`); 
+            printWindow.document.close(); 
+            return; 
+        }
+
+        // ถ้าเป็น PDF สั่งปริ้นผ่าน Blob ทันที (ไม่ต้องผ่าน pdf.js)
+        showToast('info', 'Preparing Print...', 'กำลังดึงไฟล์เพื่อสั่งปริ้นโดยตรง...');
+        try { 
+            const res = await apiCall('getFileContentForClient', docUrl); 
+            if (res.success) { 
+                const byteCharacters = atob(res.data); 
+                const byteNumbers = new Array(byteCharacters.length); 
+                for (let i = 0; i < byteCharacters.length; i++) { 
+                    byteNumbers[i] = byteCharacters.charCodeAt(i); 
+                } 
+                const byteArray = new Uint8Array(byteNumbers); 
+                
+                // สร้าง Blob เป็น PDF ดิบๆ
+                const blob = new Blob([byteArray], {type: res.mimeType || 'application/pdf'}); 
+                const blobUrl = URL.createObjectURL(blob); 
+                
+                // สร้างหน้าต่างซ่อน (Iframe) เพื่อส่งเข้าเครื่องปริ้นเบราว์เซอร์
+                const iframe = document.createElement('iframe'); 
+                iframe.style.display = 'none'; 
+                iframe.src = blobUrl; 
+                document.body.appendChild(iframe); 
+                
+                iframe.onload = () => { 
+                    setTimeout(() => { 
+                        iframe.contentWindow.focus(); 
+                        iframe.contentWindow.print(); 
+                        setTimeout(() => { 
+                            document.body.removeChild(iframe); 
+                            URL.revokeObjectURL(blobUrl); 
+                        }, 30000); 
+                    }, 500); 
+                }; 
+                showToast('success', 'Print Job Sent', 'ส่งคำสั่งปริ้นสำเร็จ'); 
+            } else { 
+                // ถ้าระบบหลังบ้านดึงไฟล์ไม่สำเร็จ ให้เด้งไปหน้า Google Drive แทน
+                window.open(docUrl, '_blank'); 
+            } 
+        } catch(err) { 
+            showToast('error', 'Print Error', 'เกิดข้อผิดพลาด เปิดแท็บใหม่แทน'); 
+            window.open(docUrl, '_blank'); 
+        }
     };
 
     const executeAdvancedExport = () => { let sourceData = []; if (exportConfig.scope === 'filtered') { sourceData = filteredEmployees.value; } else { const allDocsGrp = {}; documents.value.forEach(d => { if(!allDocsGrp[d.empId]) allDocsGrp[d.empId] = {empId: d.empId, name: d.firstName+' '+d.lastName, dept: d.dept, nationalId: d.nationalId, docs: []}; allDocsGrp[d.empId].docs.push(d); }); sourceData = Object.values(allDocsGrp); } if (sourceData.length === 0) { showToast('warning', 'ไม่มีข้อมูลสำหรับ Export'); return; } let exportData = []; if (exportConfig.format === 'matrix') { const docTypesSet = new Set(); sourceData.forEach(emp => { emp.docs.forEach(doc => docTypesSet.add(doc.docType)); }); const dynamicHeaders = Array.from(docTypesSet).sort(); exportData = sourceData.map(emp => { let row = { 'Emp ID': emp.empId, 'Name': emp.name, 'Department': emp.dept }; dynamicHeaders.forEach(header => { row[header] = ''; }); emp.docs.forEach(doc => { let dateStr = formatDate(doc.expDate); if (row[doc.docType] !== '') { row[doc.docType] += ', ' + dateStr; } else { row[doc.docType] = dateStr; } }); return row; }); } else { exportData = sourceData.flatMap(emp => emp.docs.map(doc => { let row = {}; if (exportConfig.columns.empId.selected) row['Emp ID'] = emp.empId; if (exportConfig.columns.nationalId.selected) row['National ID'] = emp.nationalId || '-'; if (exportConfig.columns.name.selected) row['Name'] = emp.name; if (exportConfig.columns.dept.selected) row['Department'] = emp.dept; if (exportConfig.columns.docType.selected) row['Doc Type'] = doc.docType; if (exportConfig.columns.startDate.selected) row['Start Date'] = formatDate(doc.startDate); if (exportConfig.columns.expDate.selected) row['Expire Date'] = formatDate(doc.expDate); if (exportConfig.columns.daysLeft.selected) row['Days Left'] = doc.daysLeft; if (exportConfig.columns.status.selected) row['Status'] = doc.status; if (exportConfig.columns.remark.selected) row['Remark'] = doc.remark || ''; return row; })); } const ws = XLSX.utils.json_to_sheet(exportData); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, exportConfig.format === 'matrix' ? "Matrix_Report" : "Document_Export"); const timestamp = new Date().toISOString().split('T')[0]; const fileName = exportConfig.format === 'matrix' ? `EDMS_Matrix_Report_${timestamp}.xlsx` : `EDMS_Export_${timestamp}.xlsx`; XLSX.writeFile(wb, fileName); showExportModal.value = false; showToast('success', 'Export สำเร็จ', 'ดาวน์โหลดไฟล์เรียบร้อยแล้ว'); };
