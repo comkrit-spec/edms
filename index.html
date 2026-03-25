@@ -874,7 +874,7 @@ createApp({
                     }
                 } catch (err) {}
             }
-        }, 30000); // 10000 มิลลิวินาที = 10 วินาที
+        }, 10000); // 10000 มิลลิวินาที = 10 วินาที
     };
 
     const showToast = (type, title, msg = '') => { const id = notificationId++; notifications.value.push({ id, type, title, msg }); setTimeout(() => removeNotification(id), 3000); };
