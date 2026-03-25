@@ -874,7 +874,7 @@ createApp({
                     }
                 } catch (err) {}
             }
-        }, 10000); // 10000 มิลลิวินาที = 10 วินาที
+        }, 30000); // 10000 มิลลิวินาที = 10 วินาที
     };
 
     const showToast = (type, title, msg = '') => { const id = notificationId++; notifications.value.push({ id, type, title, msg }); setTimeout(() => removeNotification(id), 3000); };
@@ -1065,14 +1065,11 @@ createApp({
         try { const res = await apiCall('getFileContentForClient', d.fileUrl); if (res.success) { const a = document.createElement("a"); a.href = `data:${res.mimeType};base64,${res.data}`; a.download = res.name; document.body.appendChild(a); a.click(); document.body.removeChild(a); showToast('success', 'Download Ready', 'ดาวน์โหลดไฟล์สำเร็จ'); } else { showToast('error', 'Download Error', 'ไม่มีสิทธิ์เข้าถึงไฟล์นี้'); } } catch(err) { showToast('error', 'Download Error', err.toString()); }
     };
     const printFromPreview = () => { if(!previewUrl.value) return; handleProxyPrint(previewUrl.value); };
-  // 🟢 ระบบปริ้น Native (ไม่ใช้การแปลงเป็นรูปภาพอีกต่อไป) 🟢
-    const handleProxyPrint = async (docUrl) => {
+const handleProxyPrint = async (docUrl) => {
         if(!docUrl || docUrl === '#') return; 
-        
         let isImage = false; 
         if(docUrl.match(/\.(jpeg|jpg|gif|png|bmp|webp)($|\?)/i)) { isImage = true; }
         
-        // ถ้าเป็นรูปภาพ เปิดแท็บใหม่สั่งปริ้นรูปภาพตรงๆ
         if(isImage) { 
             const printWindow = window.open('', '_blank'); 
             printWindow.document.write(`<html><head><title>Print Image</title></head><body style="margin:0;display:flex;justify-content:center;align-items:center;height:100vh;"><img src="${docUrl}" onload="setTimeout(()=>{window.print();window.close();}, 500);" style="max-width:100%;max-height:100%;"></body></html>`); 
@@ -1080,8 +1077,7 @@ createApp({
             return; 
         }
 
-        // ถ้าเป็น PDF สั่งปริ้นผ่าน Blob ทันที (ไม่ต้องผ่าน pdf.js)
-        showToast('info', 'Preparing Print...', 'กำลังดึงไฟล์เพื่อสั่งปริ้นโดยตรง...');
+        showToast('info', 'Preparing Print...', 'กำลังส่งไฟล์ PDF เข้าเครื่องปริ้น...');
         try { 
             const res = await apiCall('getFileContentForClient', docUrl); 
             if (res.success) { 
@@ -1091,12 +1087,9 @@ createApp({
                     byteNumbers[i] = byteCharacters.charCodeAt(i); 
                 } 
                 const byteArray = new Uint8Array(byteNumbers); 
-                
-                // สร้าง Blob เป็น PDF ดิบๆ
                 const blob = new Blob([byteArray], {type: res.mimeType || 'application/pdf'}); 
                 const blobUrl = URL.createObjectURL(blob); 
                 
-                // สร้างหน้าต่างซ่อน (Iframe) เพื่อส่งเข้าเครื่องปริ้นเบราว์เซอร์
                 const iframe = document.createElement('iframe'); 
                 iframe.style.display = 'none'; 
                 iframe.src = blobUrl; 
@@ -1114,7 +1107,6 @@ createApp({
                 }; 
                 showToast('success', 'Print Job Sent', 'ส่งคำสั่งปริ้นสำเร็จ'); 
             } else { 
-                // ถ้าระบบหลังบ้านดึงไฟล์ไม่สำเร็จ ให้เด้งไปหน้า Google Drive แทน
                 window.open(docUrl, '_blank'); 
             } 
         } catch(err) { 
