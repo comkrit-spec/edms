@@ -11,10 +11,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
   
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-  <script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
-
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -788,7 +784,6 @@ const apiCall = async (action, data = null) => {
     }
 };
 
-
 const { createApp, ref, computed, onMounted, reactive, watch, nextTick, onUnmounted } = Vue;
 
 createApp({
@@ -798,7 +793,6 @@ createApp({
     const loading=ref(true), currentPage=ref(0), documents=ref([]), employees=ref([]), departments=ref([]), docTypes=ref([]), usersList=ref([]);
     const settings=ref({}), showModal=ref(false), showUserModal=ref(false), showImportModal=ref(false);
     
-    // Pagination
     const itemsPerPage = ref(50);
     const currentListCurrentPage = ref(1);
 
@@ -859,22 +853,16 @@ createApp({
         }, 10000); 
     };
 
-// 🟢 ระบบดึงข้อมูลใหม่แบบเงียบๆ ทุก 10 วินาที 🟢
     const startAutoSync = () => {
         if (autoSyncInterval) clearInterval(autoSyncInterval);
         autoSyncInterval = setInterval(async () => {
-            // ดึงข้อมูลเมื่อผู้ใช้ล็อกอินอยู่ และไม่ได้กำลังอัปโหลดไฟล์
             if (isLoggedIn.value && !isProcessingQueue.value) {
                 try {
                     const res = await apiCallGet('getInitialData');
-                    if(res.success){ 
-                        // เมื่อเครื่องอื่นแก้ไข ข้อมูลในหน้าจอเราจะเปลี่ยนตามทันที
-                        documents.value = res.documents; 
-                        employees.value = res.employees; 
-                    }
+                    if(res.success){ documents.value = res.documents; employees.value = res.employees; }
                 } catch (err) {}
             }
-        }, 30000); // 10000 มิลลิวินาที = 10 วินาที
+        }, 10000); // 10 วินาที
     };
 
     const showToast = (type, title, msg = '') => { const id = notificationId++; notifications.value.push({ id, type, title, msg }); setTimeout(() => removeNotification(id), 3000); };
@@ -911,7 +899,6 @@ createApp({
     const setEndOfYear = () => { lastUsedDuration = null; if (!form.startDate) { const today = new Date(); form.startDate = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0'); } let y = form.startDate.split('-')[0]; form.expDate = y + '-12-31'; };
     const applyCustomDuration = () => { const val = parseInt(customDuration.value) || 0; if(val === 0) return; addDuration(val, customUnit.value); };
 
-    // 🟢 ระบบกรองข้อมูล (รวมรหัสชั่วคราว) 🟢
     const filteredEmployees = computed(() => {
         if ((currentPage.value === 1 || currentPage.value === 2) && !hasFilters.value) return [];
         let raw = documents.value || []; 
@@ -945,7 +932,6 @@ createApp({
         return Object.values(grp).sort((a, b) => { return String(a.empId).localeCompare(String(b.empId), undefined, { numeric: true }); });
     });
 
-    // Pagination Computeds & Methods
     const totalPages = computed(() => { if (itemsPerPage.value === 'all') return 1; return Math.ceil(filteredEmployees.value.length / itemsPerPage.value); });
     const paginatedEmployees = computed(() => { if (itemsPerPage.value === 'all') return filteredEmployees.value; const start = (currentListCurrentPage.value - 1) * itemsPerPage.value; const end = start + itemsPerPage.value; return filteredEmployees.value.slice(start, end); });
     const changeListCurrentPage = (p) => { if (p >= 1 && p <= totalPages.value) currentListCurrentPage.value = p; window.scrollTo({ top: 0, behavior: 'smooth' }); };
@@ -998,7 +984,6 @@ createApp({
     const editDoc = (d) => { Object.assign(form, d); form.isNew = false; lastUsedDuration = null; if(d.startDate) { form.startDate = d.startDate; startDateText.value = formatDateToText(form.startDate); } if(d.expDate) { form.expDate = d.expDate; expDateText.value = formatDateToText(form.expDate); } showModal.value = true; };
     const removeFromQueue = (id) => { uploadQueue.value = uploadQueue.value.filter(item => item.id !== id); };
     
-    // 🟢 แก้ไข Submit: ถ้ารหัสพนักงานว่าง ให้ใส่ TEMP-บัตร ปชช. 🟢
     const submitForm = () => { 
         if(!form.nationalId || form.nationalId.length !== 13 || isNaN(form.nationalId)) { showToast('error', 'Validation Error', 'National ID must be 13 digits.'); return; } 
         if (!form.empId || form.empId.trim() === '') { form.empId = 'TEMP-' + form.nationalId; }
@@ -1057,7 +1042,6 @@ createApp({
     const processImage = (e, cb) => { const f=e.target.files[0]; if(f){ compressImageFile(f, 500, 0.8, (compressedData) => { cb(compressedData); }); } };
     const saveAllSettings = async (logoData, bgData) => { loading.value=true; try { await apiCall('saveSettings', {settings: JSON.parse(JSON.stringify(settings.value)), depts: JSON.parse(JSON.stringify(departments.value)), types: JSON.parse(JSON.stringify(docTypes.value)), logoData: logoData, bgData: bgData}); loadData(); showToast('success', 'Settings Saved'); } catch(err) { loading.value=false; } };
     
-    // พรีวิวและดาวน์โหลดแบบ Base64 (หลบแท็บใหม่)
     const previewDoc = (d) => { if(d.fileUrl === '#') return; let url = d.fileUrl; if(url.includes('drive.google.com')) { if(url.includes('/view')) url = url.replace('/view', '/preview'); else if(url.includes('export=view')) url = url.replace(/\/uc\?export=view&id=([-\w]+)/, '/file/d/$1/preview'); else if(!url.includes('/preview') && !url.includes('export=')) url += '/preview'; } previewUrl.value = url; isPreviewPdf.value = true; };
     const handleProxyDownload = async (d) => { 
         if(d.fileUrl === '#') return; let fileId = ""; const match = d.fileUrl.match(/[-\w]{25,}/); if (match) fileId = match[0]; if(!fileId) { window.open(d.fileUrl, '_blank'); return; }
@@ -1065,7 +1049,9 @@ createApp({
         try { const res = await apiCall('getFileContentForClient', d.fileUrl); if (res.success) { const a = document.createElement("a"); a.href = `data:${res.mimeType};base64,${res.data}`; a.download = res.name; document.body.appendChild(a); a.click(); document.body.removeChild(a); showToast('success', 'Download Ready', 'ดาวน์โหลดไฟล์สำเร็จ'); } else { showToast('error', 'Download Error', 'ไม่มีสิทธิ์เข้าถึงไฟล์นี้'); } } catch(err) { showToast('error', 'Download Error', err.toString()); }
     };
     const printFromPreview = () => { if(!previewUrl.value) return; handleProxyPrint(previewUrl.value); };
-const handleProxyPrint = async (docUrl) => {
+    
+    // 🟢 ระบบ Print Native แบบใหม่ ไม่แปลภาพ (PDF JS ถูกลบไปแล้ว) 🟢
+    const handleProxyPrint = async (docUrl) => {
         if(!docUrl || docUrl === '#') return; 
         let isImage = false; 
         if(docUrl.match(/\.(jpeg|jpg|gif|png|bmp|webp)($|\?)/i)) { isImage = true; }
@@ -1144,6 +1130,5 @@ const handleProxyPrint = async (docUrl) => {
   }
 }).mount('#app');
 </script>
-<div id="print-area"></div>
 </body>
 </html>
