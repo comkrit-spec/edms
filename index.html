@@ -1081,16 +1081,18 @@ createApp({
                 iframe.src = blobUrl; 
                 document.body.appendChild(iframe); 
                 
-                iframe.onload = () => { 
-                    setTimeout(() => { 
-                        iframe.contentWindow.focus(); 
-                        iframe.contentWindow.print(); 
-                        setTimeout(() => { 
-                            document.body.removeChild(iframe); 
-                            URL.revokeObjectURL(blobUrl); 
-                        }, 30000); 
-                    }, 500); 
-                }; 
+iframe.onload = () => { 
+    iframe.contentWindow.addEventListener('afterprint', () => {
+        document.body.removeChild(iframe);
+        URL.revokeObjectURL(blobUrl);
+    });
+    
+    setTimeout(() => { 
+        iframe.contentWindow.focus(); 
+        iframe.contentWindow.print(); 
+    }, 500); 
+};
+               
                 showToast('success', 'Print Job Sent', 'ส่งคำสั่งปริ้นสำเร็จ'); 
             } else { 
                 window.open(docUrl, '_blank'); 
