@@ -78,6 +78,7 @@
     .settings-nav-item.active { background: #e0f2fe; color: #0284c7; font-weight: 600; }
     html.dark .settings-nav-item.active { background: #0c4a6e; color: #38bdf8; }
     .animate-slide-up { animation: slideUp 0.3s ease-out forwards; }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     .cb-style { accent-color: #0ea5e9; width: 16px; height: 16px; cursor: pointer; }
     .custom-select-trigger { cursor: pointer; justify-content: space-between; position: relative; }
     .custom-dropdown-menu { position: absolute; top: 100%; left: 0; width: 100%; max-height: 240px; overflow-y: auto; background: white; border: 1px solid #e2e8f0; border-radius: 8px; z-index: 50; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); margin-top: 4px; padding: 6px; color: #475569; }
@@ -335,7 +336,7 @@
              </div>
 
              <div class="space-y-6 pb-4">
-               <div v-for="emp in visibleEmployees" :key="emp.empId" class="glass-card animate-slide-up overflow-hidden group relative transition-all duration-300 ring-1 ring-slate-100 dark:ring-slate-700 hover:shadow-lg bg-white dark:bg-slate-800" :class="{'opacity-75 grayscale-[0.5]': emp.isResigned}">
+               <div v-for="emp in paginatedEmployees" :key="emp.empId" class="glass-card animate-slide-up overflow-hidden group relative transition-all duration-300 ring-1 ring-slate-100 dark:ring-slate-700 hover:shadow-lg bg-white dark:bg-slate-800" :class="{'opacity-75 grayscale-[0.5]': emp.isResigned}">
                     <div v-if="emp.isResigned" class="absolute top-0 right-0 bg-slate-500 text-white text-[10px] font-bold px-3 py-1 rounded-bl-xl z-10 shadow-sm">RESIGNED</div>
                     <div class="p-5 flex flex-wrap md:flex-nowrap items-center gap-5 border-b border-slate-100 dark:border-slate-700 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm">
                        <div class="w-14 h-14 rounded-full bg-gradient-to-br from-brand-50 to-slate-100 dark:from-slate-700 dark:to-slate-600 flex items-center justify-center text-brand-600 dark:text-slate-200 font-bold text-xl shrink-0 border-2 border-white dark:border-slate-600 shadow-md">
@@ -462,16 +463,32 @@
                         </div>
                     </div>
                 </div>
-                
-                <div ref="observerTarget" class="h-10 flex items-center justify-center text-slate-400 mt-6 pb-20">
-                    <span v-if="displayLimit < filteredEmployees.length" class="animate-pulse flex items-center gap-2">
-                        <i class="fa-solid fa-circle-notch fa-spin"></i> กำลังโหลดข้อมูลเพิ่ม...
-                    </span>
-                    <span v-else-if="filteredEmployees.length > 0" class="text-xs font-bold bg-slate-100 dark:bg-slate-800 px-4 py-2 rounded-full shadow-sm border border-slate-200 dark:border-slate-700">
-                        แสดงข้อมูลครบทั้งหมด {{ filteredEmployees.length }} รายการแล้ว
-                    </span>
-                </div>
              </div>
+
+             <div v-if="filteredEmployees.length > 0" class="glass-card p-4 flex flex-col sm:flex-row justify-between items-center gap-4 animate-fade-in mt-4 mb-20">
+                 <div class="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-slate-400">
+                     แสดง
+                     <select v-model="itemsPerPage" class="bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded px-2 py-1 outline-none cursor-pointer">
+                         <option :value="50">50</option>
+                         <option :value="100">100</option>
+                         <option value="all">ทั้งหมด</option>
+                     </select>
+                     รายการ (รวม {{ filteredEmployees.length }} คน)
+                 </div>
+                 
+                 <div v-if="itemsPerPage !== 'all' && totalPages > 1" class="flex items-center gap-1 bg-slate-50 dark:bg-slate-700/50 p-1 rounded-lg border border-slate-100 dark:border-slate-700">
+                     <button @click="changeListCurrentPage(currentListCurrentPage - 1)" :disabled="currentListCurrentPage === 1" class="w-8 h-8 flex items-center justify-center rounded-md hover:bg-white dark:hover:bg-slate-600 disabled:opacity-30 disabled:cursor-not-allowed transition shadow-sm text-slate-500 dark:text-slate-300">
+                         <i class="fa-solid fa-chevron-left text-[10px]"></i>
+                     </button>
+                     <span class="px-3 text-xs font-bold text-brand-600 dark:text-brand-400">
+                         หน้า {{ currentListCurrentPage }} / {{ totalPages }}
+                     </span>
+                     <button @click="changeListCurrentPage(currentListCurrentPage + 1)" :disabled="currentListCurrentPage === totalPages" class="w-8 h-8 flex items-center justify-center rounded-md hover:bg-white dark:hover:bg-slate-600 disabled:opacity-30 disabled:cursor-not-allowed transition shadow-sm text-slate-500 dark:text-slate-300">
+                         <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                     </button>
+                 </div>
+             </div>
+
        </div>
 
         <div v-if="currentPage === 3 && isAdmin" class="max-w-6xl mx-auto animate-slide-up pb-10">
@@ -735,7 +752,6 @@
 <script>
 // ⚠️ ใส่ Web App URL ของคุณตรงนี้!
 const GAS_API_URL = "https://script.google.com/macros/s/AKfycbzFsQAGxUJH-dBmFHcuUIkSqhaRmOENCpXR647KPeXoyWX20QaD-mb6mbVe-gShVJp8Kg/exec"; 
-
 const apiCallGet = async (action) => {
     try {
         const response = await fetch(`${GAS_API_URL}?action=${action}&t=${Date.now()}`);
@@ -751,6 +767,7 @@ const apiCall = async (action, data = null, retries = 3, backoff = 1000) => {
     const formData = new URLSearchParams();
     formData.append('action', action);
     
+    // 🌟 ดึงชื่อ User ส่งให้ Backend เก็บ Log
     const userStr = localStorage.getItem('edms_user_ent');
     if (userStr) {
         try {
@@ -807,9 +824,9 @@ createApp({
     const loading=ref(true), currentPage=ref(0), documents=ref([]), employees=ref([]), departments=ref([]), docTypes=ref([]), usersList=ref([]);
     const settings=ref({}), showModal=ref(false), showUserModal=ref(false), showImportModal=ref(false);
     
-    // Virtual Scroll State
-    const displayLimit = ref(20);
-    const observerTarget = ref(null);
+    // 🌟 นำระบบ Pagination กลับมาเหมือนต้นฉบับ
+    const itemsPerPage = ref(50);
+    const currentListCurrentPage = ref(1);
 
     const showExportModal = ref(false);
     const exportConfig = reactive({
@@ -847,7 +864,7 @@ createApp({
     const expDateText = ref('');
     const fileUploadInput = ref(null);
 
-    // Debounce Search
+    // 🌟 ระบบ Debounce Search ป้องกันการค้างเวลาพิมพ์ค้นหา
     let searchTimeout = null;
     const debouncedSearchQuery = ref('');
     watch(searchQuery, (newVal) => {
@@ -892,12 +909,6 @@ createApp({
                 } catch (err) {}
             }
         }, 10000);
-    };
-
-    const loadMore = () => {
-        if (displayLimit.value < filteredEmployees.value.length) {
-            displayLimit.value += 20;
-        }
     };
 
     const showToast = (type, title, msg = '') => { const id = notificationId++; notifications.value.push({ id, type, title, msg }); setTimeout(() => removeNotification(id), 3000); };
@@ -970,12 +981,14 @@ createApp({
         return Object.values(grp).sort((a, b) => { return String(a.empId).localeCompare(String(b.empId), undefined, { numeric: true }); });
     });
 
-    const visibleEmployees = computed(() => {
-        return filteredEmployees.value.slice(0, displayLimit.value);
-    });
+    // 🌟 Pagination (ระบบแบ่งหน้าดั้งเดิม)
+    const totalPages = computed(() => { if (itemsPerPage.value === 'all') return 1; return Math.ceil(filteredEmployees.value.length / itemsPerPage.value); });
+    const paginatedEmployees = computed(() => { if (itemsPerPage.value === 'all') return filteredEmployees.value; const start = (currentListCurrentPage.value - 1) * itemsPerPage.value; const end = start + itemsPerPage.value; return filteredEmployees.value.slice(start, end); });
+    const changeListCurrentPage = (p) => { if (p >= 1 && p <= totalPages.value) currentListCurrentPage.value = p; window.scrollTo({ top: 0, behavior: 'smooth' }); };
     
-    watch([debouncedSearchQuery, searchTags, selectedDepts, selectedStatuses, selectedDocTypes, filterStartDate, filterEndDate], () => { 
-        displayLimit.value = 20; 
+    // รีเซ็ตหน้ากลับไป 1 ทุกครั้งที่มีการ Filter หรือพิมพ์ค้นหา
+    watch([debouncedSearchQuery, searchTags, selectedDepts, selectedStatuses, selectedDocTypes, itemsPerPage, filterStartDate, filterEndDate], () => { 
+        currentListCurrentPage.value = 1; 
     });
     
     const toggleSelectAll = (type) => { if (type === 'dept') { if (selectedDepts.value.length === departments.value.length) selectedDepts.value = []; else selectedDepts.value = [...departments.value]; } else if (type === 'type') { if (selectedDocTypes.value.length === docTypes.value.length) selectedDocTypes.value = []; else selectedDocTypes.value = [...docTypes.value]; } else if (type === 'status') { if (selectedStatuses.value.length === 3) selectedStatuses.value = []; else selectedStatuses.value = ['Active', 'Warning', 'Expired']; } };
@@ -1017,16 +1030,6 @@ createApp({
         timeInterval = setInterval(updateTime, 1000); 
         initSessionTracker(); 
         startAutoSync(); 
-        
-        const observer = new IntersectionObserver((entries) => {
-            if (entries[0].isIntersecting) {
-                loadMore();
-            }
-        }, { rootMargin: '200px' });
-        
-        if (observerTarget.value) {
-            observer.observe(observerTarget.value);
-        }
     });
     
     onUnmounted(() => { clearInterval(timeInterval); clearInterval(sessionCheckInterval); if(autoSyncInterval) clearInterval(autoSyncInterval); window.removeEventListener('mousemove', updateActivityTime); window.removeEventListener('keydown', updateActivityTime); window.removeEventListener('click', updateActivityTime); window.removeEventListener('touchstart', updateActivityTime); });
@@ -1127,7 +1130,7 @@ createApp({
         } catch(err) { showToast('error', 'Download Error', err.toString()); }
     };
 
-    // 🌟 ระบบ Print ดั้งเดิม (เด้งขึ้นหน้าจอทันที) + แก้ไข Memory Leak แล้ว
+    // 🌟 ระบบ Print แบบดั้งเดิม (เด้งขึ้นหน้าจอทันที ไม่ต้องเปิดแท็บใหม่) + แก้ Memory Leak
     const handleProxyPrint = async (docObj) => {
         const docUrl = typeof docObj === 'string' ? docObj : docObj.fileUrl;
         const docName = typeof docObj === 'string' ? 'Document' : (docObj.fileName || 'Document');
@@ -1165,7 +1168,6 @@ createApp({
                 document.body.appendChild(iframe); 
                 
                 iframe.onload = () => { 
-                    // 🌟 ใช้ Event afterprint เพื่อลบ iframe ทันทีที่สั่งพิมพ์เสร็จ (แก้ Memory Leak 30 วินาที)
                     iframe.contentWindow.addEventListener('afterprint', () => {
                         document.body.removeChild(iframe);
                         URL.revokeObjectURL(blobUrl);
@@ -1176,7 +1178,7 @@ createApp({
                         iframe.contentWindow.print(); 
                     }, 500); 
                 };
-                showToast('success', 'Print Job Sent', 'ส่งคำสั่งปริ้นสำเร็จ'); 
+                showToast('success', 'Print Job Sent', 'เปิดหน้าต่างสำหรับปริ้นสำเร็จ'); 
             } else { 
                 window.open(docUrl, '_blank');
             } 
@@ -1257,7 +1259,7 @@ createApp({
     return { 
        componentKey, loading, isLoggedIn, currentUser, isAdmin, loginForm, loginLoading, currentPage, pages, stats, settings, searchQuery, searchTags, filteredEmployees, empSuggestions, form, showModal, departments, docTypes, newItemInput, handleLogin, logout, openModal, editDoc, deleteDoc, submitForm, handleFileUpload, saveSettings, previewDoc, previewUrl, isPreviewPdf, formatDate, toggleResign, usersList, deleteUser, changePage, showUserModal, userForm, saveUser, toggleUser, openAddUser, editUser, isUserEdit, searchSuggestions, selectSuggestion, addSearchTag, removeTag, resetFilters, selectEmployee, addItem, removeItem, activeSetting, activeActionMenu, openActionMenu, closeAllDropdowns, hasFilters, showSuggestions, filterStartDate, filterEndDate, statusBadge, showFilters, logs, currentDate, currentTime, showImportModal, downloadTemplate, handleImportFile, handleProxyDownload, handleProxyPrint, printFromPreview, selectedDepts, selectedStatuses, selectedDocTypes, activeFilterDropdown, toggleFilterDropdown, showResigned, loadData, isDark, toggleTheme, collapsedCards, toggleCardCollapse, canManage, handleBgUpload, clearLogs, getSafeImgUrl, fileUploadInput, isDragging, handleDrop, notifications, showToast, removeNotification, 
        showDashboardTable, dashboardFilter, dashboardDocs, exportDashboardDocs, toggleSelectAll, uploadQueue, isQueueExpanded, isProcessingQueue, removeFromQueue, confirmBulkDelete, showPassword, checkPermission, canPreview, showEmpDropdown, handleEmpInput, addDuration, setEndOfYear, customDuration, customUnit, applyCustomDuration, startDateText, expDateText, sortThaiEng, showExportModal, exportConfig, executeAdvancedExport,
-       displayLimit, visibleEmployees, loadMore, observerTarget, debouncedSearchQuery
+       itemsPerPage, currentListCurrentPage, totalPages, paginatedEmployees, changeListCurrentPage
     };
   }
 }).mount('#app');
