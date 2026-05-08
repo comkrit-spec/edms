@@ -1,4 +1,4 @@
-const CACHE_NAME = 'edms-cache-v2'; // เปลี่ยนเลข Version ทุกครั้งที่ Deploy โค้ดใหม่
+const CACHE_NAME = 'edms-cache-v2'; // เพิ่มเลข Version
 const urlsToCache = [
   './index.html',
   './manifest.json'
@@ -6,12 +6,13 @@ const urlsToCache = [
 
 self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache))
+    caches.open(CACHE_NAME)
+      .then(cache => cache.addAll(urlsToCache))
   );
-  self.skipWaiting(); // บังคับให้ SW ตัวใหม่ทำงานทันที
+  self.skipWaiting();
 });
 
-// ลบ Cache เก่าทิ้งเมื่อมีการอัปเดตเวอร์ชัน
+// เพิ่มระบบเคลียร์ Cache เก่า
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(keys => 
@@ -23,9 +24,11 @@ self.addEventListener('activate', event => {
 
 self.addEventListener('fetch', event => {
   event.respondWith(
-    caches.match(event.request).then(response => {
-      if (response) { return response; }
-      return fetch(event.request);
-    })
+    caches.match(event.request)
+      .then(response => {
+        if (response) { return response; }
+        return fetch(event.request);
+      }
+    )
   );
 });
