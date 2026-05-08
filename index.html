@@ -749,6 +749,7 @@
 
 </div>
 
+
 <script>
 // ⚠️ ใส่ Web App URL ของคุณตรงนี้!
 const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyZGpAZc4INwpgWKZ9WNs1lTjsckuLcR3OofYwCDIZFhOOE5S_1t-6vPI7OmztYOrwVOw/exec"; 
@@ -764,23 +765,29 @@ const apiCallGet = async (action) => {
     }
 };
 
-const apiCall = async (action, data = null) => {
-    try {
-        const formData = new URLSearchParams();
-        formData.append('action', action);
-        if (data !== null) {
-            formData.append('data', JSON.stringify(data));
+// 🛠️ แก้ไข: เพิ่ม Retry Logic ป้องกันปัญหา Network หลุด หรือ GAS Limit
+const apiCall = async (action, data = null, retries = 3, backoff = 1000) => {
+    const formData = new URLSearchParams();
+    formData.append('action', action);
+    if (data !== null) {
+        formData.append('data', JSON.stringify(data));
+    }
+
+    for (let i = 0; i < retries; i++) {
+        try {
+            const response = await fetch(GAS_API_URL, {
+                method: 'POST',
+                body: formData
+            });
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            const result = await response.json();
+            if(!result) throw new Error("Empty response from server");
+            return result;
+        } catch (error) {
+            console.warn(`API Attempt ${i + 1} failed:`, error);
+            if (i === retries - 1) throw error; // ถ้าครบโควต้าแล้วให้ throw error
+            await new Promise(res => setTimeout(res, backoff * Math.pow(2, i))); // Exponential backoff
         }
-        const response = await fetch(GAS_API_URL, {
-            method: 'POST',
-            body: formData
-        });
-        const result = await response.json();
-        if(!result) throw new Error("Empty response from server");
-        return result;
-    } catch (error) {
-        console.error("API Error:", error);
-        throw error;
     }
 };
 
@@ -788,6 +795,20 @@ const { createApp, ref, computed, onMounted, reactive, watch, nextTick, onUnmoun
 
 createApp({
   setup() {
+    // 🛠️ แก้ไข: แยก Constants
+    const STATUS = { ACTIVE: 'Active', WARNING: 'Warning', EXPIRED: 'Expired' };
+    const WARN_DAYS = 30;
+    const PAGE = { DASHBOARD: 0, SEARCH: 1, MANAGE: 2, SETTINGS: 3, USERS: 4 };
+
+    // 🛠️ แก้ไข: คำนวณ DaysLeft แบบจัดการ Timezone
+    const calcDaysLeft = (expDate) => {
+        if (!expDate) return 0;
+        const exp = new Date(expDate + 'T00:00:00+07:00'); // Timezone ประเทศไทย
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        return Math.ceil((exp - today) / 86400000);
+    };
+
     const componentKey = ref(0);
     const isLoggedIn=ref(false), currentUser=ref({}), loginForm=reactive({}), loginLoading=ref(false);
     const loading=ref(true), currentPage=ref(0), documents=ref([]), employees=ref([]), departments=ref([]), docTypes=ref([]), usersList=ref([]);
@@ -803,6 +824,7 @@ createApp({
             empId: { label: 'รหัสพนักงาน', selected: true }, nationalId: { label: 'เลขบัตร ปชช.', selected: true }, name: { label: 'ชื่อ-สกุล', selected: true }, dept: { label: 'แผนก', selected: true }, docType: { label: 'ประเภทเอกสาร', selected: true }, startDate: { label: 'วันเริ่มสัญญา', selected: false }, expDate: { label: 'วันหมดอายุ', selected: true }, daysLeft: { label: 'จำนวนวันคงเหลือ', selected: true }, status: { label: 'สถานะ', selected: true }, remark: { label: 'หมายเหตุ', selected: false }
         }
     });
+
     const form=reactive({}), userForm=reactive({role:'User'}), logs=ref([]);
     const searchQuery=ref(''), searchTags=ref([]);
     const selectedDepts=ref([]), selectedStatuses=ref([]), selectedDocTypes=ref([]);
@@ -831,17 +853,30 @@ createApp({
     const expDateText = ref('');
     const fileUploadInput = ref(null);
 
-    const getSafeImgUrl = (url) => { if (!url) return ''; const match = url.match(/[-\w]{25,}/); if (url.includes('drive.google.com') && match) { return 'https://drive.google.com/thumbnail?id=' + match[0] + '&sz=w1920-h1080'; } return url; };
+    // 🛠️ แก้ไข: เพิ่มระบบ Debounce ให้กับช่องค้นหา (Search)
+    let searchTimeout = null;
+    const debouncedSearchQuery = ref('');
+    watch(searchQuery, (newVal) => {
+        if (searchTimeout) clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            debouncedSearchQuery.value = newVal;
+        }, 300); // ดีเลย์ 300ms เพื่อลดการประมวลผลซ้ำซ้อน
+    });
+
+    const getSafeImgUrl = (url) => { if (!url) return ''; const match = url.match(/[-\w]{25,}/);
+    if (url.includes('drive.google.com') && match) { return 'https://drive.google.com/thumbnail?id=' + match[0] + '&sz=w1920-h1080'; } return url; };
+    
     const sortThaiEng = (arr) => { return arr.sort((a, b) => { const strA = String(a).trim(); const strB = String(b).trim(); const isEngA = /^[a-zA-Z]/.test(strA); const isEngB = /^[a-zA-Z]/.test(strB); if (isEngA && !isEngB) return -1; if (!isEngA && isEngB) return 1; return strA.localeCompare(strB, 'th-TH'); }); };
 
     let lastUsedDuration = null;
     let lastActivityTime = Date.now();
     let sessionCheckInterval = null;
-    let autoSyncInterval = null; 
-
+    let autoSyncInterval = null;
     const updateActivityTime = () => { lastActivityTime = Date.now(); };
+    
     const initSessionTracker = () => {
-        window.addEventListener('mousemove', updateActivityTime); window.addEventListener('keydown', updateActivityTime); window.addEventListener('click', updateActivityTime); window.addEventListener('touchstart', updateActivityTime);
+        window.addEventListener('mousemove', updateActivityTime); window.addEventListener('keydown', updateActivityTime); window.addEventListener('click', updateActivityTime);
+        window.addEventListener('touchstart', updateActivityTime);
         sessionCheckInterval = setInterval(() => {
             if(isLoggedIn.value) {
                 const timeoutMins = parseInt(settings.value.sessionTimeout) || 30; 
@@ -850,7 +885,7 @@ createApp({
                     Swal.fire({ title: 'หมดเวลาการเชื่อมต่อ', text: 'คุณไม่ได้ใช้งานระบบเป็นระยะเวลานาน', icon: 'warning', confirmButtonText: 'เข้าสู่ระบบใหม่', confirmButtonColor: '#0ea5e9', background: isDark.value ? '#1e293b' : '#fff', color: isDark.value ? '#cbd5e1' : '#334155', allowOutsideClick: false }).then(() => { window.location.reload(); });
                 }
             }
-        }, 10000); 
+        }, 10000);
     };
 
     const startAutoSync = () => {
@@ -862,13 +897,12 @@ createApp({
                     if(res.success){ documents.value = res.documents; employees.value = res.employees; }
                 } catch (err) {}
             }
-        }, 10000); // 10 วินาที
+        }, 10000);
     };
 
     const showToast = (type, title, msg = '') => { const id = notificationId++; notifications.value.push({ id, type, title, msg }); setTimeout(() => removeNotification(id), 3000); };
     const removeNotification = (id) => { notifications.value = notifications.value.filter(n => n.id !== id); };
     const toggleTheme = () => { isDark.value = !isDark.value; if(isDark.value) document.documentElement.classList.add('dark'); else document.documentElement.classList.remove('dark'); localStorage.setItem('edms_theme', isDark.value ? 'dark' : 'light'); };
-    
     const currentTime = ref(''), currentDate = ref('');
     const updateTime = () => { const now = new Date(); currentTime.value = now.toLocaleTimeString('th-TH', {hour12:false}); currentDate.value = formatDate(now, false); };
     let timeInterval;
@@ -878,8 +912,11 @@ createApp({
     const canManage = computed(() => currentUser.value && (currentUser.value.role === 'Admin' || currentUser.value.role === 'Manager'));
     const checkPermission = (req) => { if(req==='all') return true; if(req==='admin') return isAdmin.value; if(req==='manage') return canManage.value; return false; };
     const canPreview = (fileName) => { if(!fileName) return false; const ext = fileName.split('.').pop().toLowerCase(); const previewable = ['pdf', 'jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp']; return previewable.includes(ext); };
-    const hasFilters = computed(() => searchTags.value.length>0 || searchQuery.value || selectedDepts.value.length>0 || selectedStatuses.value.length>0 || selectedDocTypes.value.length>0 || filterStartDate.value || filterEndDate.value);
-    const searchSuggestions = computed(() => { if(!searchQuery.value) return []; const q = searchQuery.value.toLowerCase(); return employees.value.filter(e => (e.empId.toLowerCase().includes(q) || e.firstName.toLowerCase().includes(q)) && !searchTags.value.includes(e.empId)).slice(0, 5); });
+    const hasFilters = computed(() => searchTags.value.length>0 || debouncedSearchQuery.value || selectedDepts.value.length>0 || selectedStatuses.value.length>0 || selectedDocTypes.value.length>0 || filterStartDate.value || filterEndDate.value);
+    
+    // 🛠️ แก้ไข: ใช้ debouncedSearchQuery แทน
+    const searchSuggestions = computed(() => { if(!debouncedSearchQuery.value) return []; const q = debouncedSearchQuery.value.toLowerCase(); return employees.value.filter(e => (e.empId.toLowerCase().includes(q) || e.firstName.toLowerCase().includes(q)) && !searchTags.value.includes(e.empId)).slice(0, 5); });
+    
     const selectSuggestion = (s) => { searchTags.value.push(s.empId); searchQuery.value = ''; };
     const addSearchTag = () => { if(searchQuery.value.trim()){ searchTags.value.push(searchQuery.value.trim()); searchQuery.value = ''; } };
     const removeTag = (idx) => { searchTags.value.splice(idx, 1); };
@@ -889,6 +926,7 @@ createApp({
     
     const formatDateToText = (dateStr) => { if (!dateStr) return ''; const d = new Date(dateStr); if (isNaN(d.getTime())) return ''; return String(d.getDate()).padStart(2, '0') + '/' + String(d.getMonth() + 1).padStart(2, '0') + '/' + d.getFullYear(); };
     const parseTextToDate = (text) => { if (!text) return null; text = text.trim(); let d, m, y; if (/^\d{8}$/.test(text)) { d = parseInt(text.substring(0, 2), 10); m = parseInt(text.substring(2, 4), 10); y = parseInt(text.substring(4, 8), 10); } else if (/^\d{6}$/.test(text)) { d = parseInt(text.substring(0, 2), 10); m = parseInt(text.substring(2, 4), 10); y = parseInt(text.substring(4, 6), 10); y += 2000; if (y < 2050) y += 543; } else { const parts = text.split(/[\/\-\.]/); if (parts.length !== 3) return null; d = parseInt(parts[0], 10); m = parseInt(parts[1], 10); y = parseInt(parts[2], 10); } if (isNaN(d) || isNaN(m) || isNaN(y)) return null; if (y > 2400) y -= 543; if (m < 1 || m > 12) return null; const daysInMonth = new Date(y, m, 0).getDate(); if (d < 1 || d > daysInMonth) return null; return y + '-' + String(m).padStart(2,'0') + '-' + String(d).padStart(2,'0'); };
+    
     watch(() => form.startDate, (newVal, oldVal) => { if (newVal) startDateText.value = formatDateToText(newVal); if (newVal && oldVal && lastUsedDuration && form.expDate) { executeDuration(lastUsedDuration.val, lastUsedDuration.unit); } });
     watch(startDateText, (newVal) => { const parsed = parseTextToDate(newVal); if (parsed && parsed !== form.startDate) { form.startDate = parsed; } });
     watch(() => form.expDate, (newVal) => { if (newVal) expDateText.value = formatDateToText(newVal); });
@@ -911,11 +949,14 @@ createApp({
             const fEnd = new Date(filterEndDate.value); fEnd.setHours(23,59,59,999); 
             raw = raw.filter(d => { if(!d.startDate || !d.expDate) return false; return new Date(d.startDate) <= fEnd && new Date(d.expDate) >= fStart; });
         }
-        const q = searchQuery.value.trim().toLowerCase();
+        
+        // 🛠️ แก้ไข: ใช้ debouncedSearchQuery แทนการอ่านจาก searchQuery โดยตรง
+        const q = debouncedSearchQuery.value.trim().toLowerCase();
         const tags = searchTags.value.map(t => t.toLowerCase());
+        
         if (tags.length > 0 || q) { raw = raw.filter(d => { const txt = (d.empId + d.firstName + d.lastName + d.nationalId).toLowerCase(); const matchTag = tags.some(tag => txt.includes(tag)); const matchQuery = q ? txt.includes(q) : false; return (tags.length > 0 ? matchTag : false) || matchQuery; }); }
         
-        const grp={}; 
+        const grp={};
         raw.forEach(d => { 
             const groupKey = (d.empId && d.empId.trim() !== '') ? d.empId : (d.nationalId ? 'TEMP-' + d.nationalId : 'DOC-' + d.id);
             if(!grp[groupKey]) {
@@ -927,7 +968,6 @@ createApp({
             }
             grp[groupKey].docs.push(d); 
         });
-
         Object.values(grp).forEach(emp => { emp.docs.sort((a, b) => { const strA = String(a.docType || '').trim(); const strB = String(b.docType || '').trim(); const isEngA = /^[a-zA-Z]/.test(strA); const isEngB = /^[a-zA-Z]/.test(strB); if (isEngA && !isEngB) return -1; if (!isEngA && isEngB) return 1; return strA.localeCompare(strB, 'th-TH'); }); });
         return Object.values(grp).sort((a, b) => { return String(a.empId).localeCompare(String(b.empId), undefined, { numeric: true }); });
     });
@@ -935,12 +975,14 @@ createApp({
     const totalPages = computed(() => { if (itemsPerPage.value === 'all') return 1; return Math.ceil(filteredEmployees.value.length / itemsPerPage.value); });
     const paginatedEmployees = computed(() => { if (itemsPerPage.value === 'all') return filteredEmployees.value; const start = (currentListCurrentPage.value - 1) * itemsPerPage.value; const end = start + itemsPerPage.value; return filteredEmployees.value.slice(start, end); });
     const changeListCurrentPage = (p) => { if (p >= 1 && p <= totalPages.value) currentListCurrentPage.value = p; window.scrollTo({ top: 0, behavior: 'smooth' }); };
-    watch([searchQuery, searchTags, selectedDepts, selectedStatuses, selectedDocTypes, itemsPerPage, filterStartDate, filterEndDate], () => { currentListCurrentPage.value = 1; });
-
+    
+    // 🛠️ แก้ไข: เพิ่ม debouncedSearchQuery ใน watch ด้วย
+    watch([debouncedSearchQuery, searchTags, selectedDepts, selectedStatuses, selectedDocTypes, itemsPerPage, filterStartDate, filterEndDate], () => { currentListCurrentPage.value = 1; });
+    
     const toggleSelectAll = (type) => { if (type === 'dept') { if (selectedDepts.value.length === departments.value.length) selectedDepts.value = []; else selectedDepts.value = [...departments.value]; } else if (type === 'type') { if (selectedDocTypes.value.length === docTypes.value.length) selectedDocTypes.value = []; else selectedDocTypes.value = [...docTypes.value]; } else if (type === 'status') { if (selectedStatuses.value.length === 3) selectedStatuses.value = []; else selectedStatuses.value = ['Active', 'Warning', 'Expired']; } };
     const addItem = (type) => { if(!newItemInput.value) return; if(type==='dept') { departments.value.push(newItemInput.value); departments.value = sortThaiEng(departments.value); } if(type==='type') { docTypes.value.push(newItemInput.value); docTypes.value = sortThaiEng(docTypes.value); } newItemInput.value = ''; };
     const removeItem = (type, index) => { if(type==='dept') departments.value.splice(index, 1); if(type==='type') docTypes.value.splice(index, 1); };
-
+    
     const checkLogin = () => { 
         if(localStorage.getItem('edms_theme') === 'dark') { isDark.value = true; document.documentElement.classList.add('dark'); }
         const cachedSettings = localStorage.getItem('edms_settings_cache');
@@ -958,7 +1000,7 @@ createApp({
            if(res.success){ currentUser.value=res.user; isLoggedIn.value=true; localStorage.setItem('edms_user_ent',JSON.stringify(res.user)); loadData(); showToast('success', 'Welcome Back', currentUser.value.name); } else { showToast('error', 'Login Failed', res.error); }
        } catch (err) { loginLoading.value=false; }
     };
-    
+
     const loadData = async () => {
       loading.value=true;
       if(!GAS_API_URL || GAS_API_URL === 'YOUR_WEB_APP_URL_HERE'){ setTimeout(()=>{ finishLoad(); },500); return; } 
@@ -974,12 +1016,14 @@ createApp({
     watch(currentPage, (v) => { if(v===0) setTimeout(initCharts, 300); closeAllDropdowns(); dashboardFilter.value=null; });
     const logout = () => { Swal.fire({ title: 'Signing Out...', text: 'See you next time!', timer: 1500, showConfirmButton: false, icon: 'success', background: isDark.value ? '#1e293b' : '#fff', color: isDark.value ? '#cbd5e1' : '#334155' }).then(() => { isLoggedIn.value=false; localStorage.removeItem('edms_user_ent'); currentPage.value=0; }); };
     
-    const resetFilters = () => { searchTags.value=[]; searchQuery.value=''; selectedDepts.value=[]; selectedStatuses.value=[]; selectedDocTypes.value=[]; filterStartDate.value=''; filterEndDate.value=''; showResigned.value=false; };
+    const resetFilters = () => { searchTags.value=[]; searchQuery.value=''; debouncedSearchQuery.value=''; selectedDepts.value=[]; selectedStatuses.value=[]; selectedDocTypes.value=[]; filterStartDate.value=''; filterEndDate.value=''; showResigned.value=false; };
     const openActionMenu = (id) => activeActionMenu.value = activeActionMenu.value === id ? null : id;
     const toggleFilterDropdown = (name) => { activeFilterDropdown.value = activeFilterDropdown.value === name ? null : name; };
     const closeAllDropdowns = () => { activeActionMenu.value = null; activeFilterDropdown.value = null; showEmpDropdown.value = false; };
     const toggleCardCollapse = (empId) => { if (collapsedCards.value.has(empId)) collapsedCards.value.delete(empId); else collapsedCards.value.add(empId); };
-    const resetForm = () => { Object.assign(form, { id: '', empId: '', firstName: '', lastName: '', nationalId: '', dept: departments.value[0] || '', docType: docTypes.value[0] || '', startDate: '', expDate: '', fileUrl: '', fileName: '', fileData: null, photoUrl: '', empPhotoData: null, isNew: true, remark: '' }); startDateText.value = ''; expDateText.value = ''; lastUsedDuration = null; if (fileUploadInput.value) fileUploadInput.value.value = ''; isDragging.value = false; showSuggestions.value = true; };
+    
+    const resetForm = () => { Object.assign(form, { id: '', empId: '', firstName: '', lastName: '', nationalId: '', dept: departments.value[0] || '', docType: docTypes.value[0] || '', startDate: '', expDate: '', fileUrl: '', fileName: '', fileData: null, photoUrl: '', empPhotoData: null, isNew: true, remark: '' });
+    startDateText.value = ''; expDateText.value = ''; lastUsedDuration = null; if (fileUploadInput.value) fileUploadInput.value.value = ''; isDragging.value = false; showSuggestions.value = true; };
     const openModal = () => { resetForm(); showModal.value = true; };
     const editDoc = (d) => { Object.assign(form, d); form.isNew = false; lastUsedDuration = null; if(d.startDate) { form.startDate = d.startDate; startDateText.value = formatDateToText(form.startDate); } if(d.expDate) { form.expDate = d.expDate; expDateText.value = formatDateToText(form.expDate); } showModal.value = true; };
     const removeFromQueue = (id) => { uploadQueue.value = uploadQueue.value.filter(item => item.id !== id); };
@@ -992,8 +1036,10 @@ createApp({
         uploadQueue.value.push(job); showToast('info', 'Queued', 'Added to upload queue'); showModal.value = false; resetForm(); processQueue();
     };
     
-    const deleteDoc = (id) => { let docName = "Document"; const targetId = String(id).trim(); for(const emp of employees.value) { if(emp.docs) { const d = emp.docs.find(x => String(x.id).trim() === targetId); if(d) { docName = d.docType; break; } } } Swal.fire({ title: 'ลบเอกสาร?', text: 'ยืนยันการลบ: ' + docName, icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', cancelButtonColor: '#64748b', confirmButtonText: 'ลบข้อมูล', cancelButtonText: 'ยกเลิก', background: isDark.value ? '#1e293b' : '#fff', color: isDark.value ? '#cbd5e1' : '#334155' }).then((result) => { if (result.isConfirmed) { const job = { id: Date.now(), type: 'delete', status: 'pending', data: targetId, title: docName, errorMsg: '' }; uploadQueue.value.push(job); isQueueExpanded.value = true; processQueue(); } }); };
-    const confirmBulkDelete = (emp) => { const targetEmpId = String(emp.empId).trim(); Swal.fire({ title: 'ลบข้อมูล ' + emp.name + '?', html: 'เอกสารทั้งหมด <b>' + (emp.docs ? emp.docs.length : 0) + ' รายการ</b> จะถูกลบถาวร!<br>การกระทำนี้ไม่สามารถกู้คืนได้', icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', cancelButtonColor: '#64748b', confirmButtonText: 'ยืนยันลบทั้งหมด', cancelButtonText: 'ยกเลิก', background: isDark.value ? '#1e293b' : '#fff', color: isDark.value ? '#cbd5e1' : '#334155' }).then((result) => { if (result.isConfirmed) { const job = { id: Date.now(), type: 'bulk-delete', status: 'pending', data: targetEmpId, title: emp.name + ' (All Docs)', errorMsg: '' }; uploadQueue.value.push(job); isQueueExpanded.value = true; processQueue(); } }); };
+    const deleteDoc = (id) => { let docName = "Document"; const targetId = String(id).trim();
+    for(const emp of employees.value) { if(emp.docs) { const d = emp.docs.find(x => String(x.id).trim() === targetId); if(d) { docName = d.docType; break; } } } Swal.fire({ title: 'ลบเอกสาร?', text: 'ยืนยันการลบ: ' + docName, icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', cancelButtonColor: '#64748b', confirmButtonText: 'ลบข้อมูล', cancelButtonText: 'ยกเลิก', background: isDark.value ? '#1e293b' : '#fff', color: isDark.value ? '#cbd5e1' : '#334155' }).then((result) => { if (result.isConfirmed) { const job = { id: Date.now(), type: 'delete', status: 'pending', data: targetId, title: docName, errorMsg: '' }; uploadQueue.value.push(job); isQueueExpanded.value = true; processQueue(); } }); };
+    const confirmBulkDelete = (emp) => { const targetEmpId = String(emp.empId).trim();
+    Swal.fire({ title: 'ลบข้อมูล ' + emp.name + '?', html: 'เอกสารทั้งหมด <b>' + (emp.docs ? emp.docs.length : 0) + ' รายการ</b> จะถูกลบถาวร!<br>การกระทำนี้ไม่สามารถกู้คืนได้', icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', cancelButtonColor: '#64748b', confirmButtonText: 'ยืนยันลบทั้งหมด', cancelButtonText: 'ยกเลิก', background: isDark.value ? '#1e293b' : '#fff', color: isDark.value ? '#cbd5e1' : '#334155' }).then((result) => { if (result.isConfirmed) { const job = { id: Date.now(), type: 'bulk-delete', status: 'pending', data: targetEmpId, title: emp.name + ' (All Docs)', errorMsg: '' }; uploadQueue.value.push(job); isQueueExpanded.value = true; processQueue(); } }); };
     
     const processQueue = async () => {
         if (isProcessingQueue.value) { if (window.lastQueueStart && Date.now() - window.lastQueueStart > 30000) { isProcessingQueue.value = false; } else { return; } }
@@ -1001,22 +1047,26 @@ createApp({
         if (jobIndex === -1) { isProcessingQueue.value = false; window.lastQueueStart = null; return; }
 
         isProcessingQueue.value = true; window.lastQueueStart = Date.now();
-        const job = uploadQueue.value[jobIndex]; job.status = 'processing';
+        const job = uploadQueue.value[jobIndex];
+        job.status = 'processing';
         
         const onSuccess = (res) => {
             try {
                 if (res && res.success) {
-                    job.status = 'success'; if(res.documents) documents.value = res.documents; if(res.employees) employees.value = res.employees;
+                    job.status = 'success';
+                    if(res.documents) documents.value = res.documents; if(res.employees) employees.value = res.employees;
                     if (job.type === 'upload') { showToast('success', (typeof job.data === 'object' && !job.data.isNew) ? 'อัปเดตเอกสารสำเร็จ' : 'บันทึกเอกสารใหม่สำเร็จ', 'เอกสารของ ' + job.title + ' ถูกบันทึกแล้ว'); } else if (job.type === 'delete') { showToast('success', 'ลบเอกสารสำเร็จ', 'ลบไฟล์ ' + job.title + ' เรียบร้อยแล้ว'); } else if (job.type === 'bulk-delete') { showToast('success', 'ลบข้อมูลทั้งหมดสำเร็จ', 'ทำรายการของ ' + job.title + ' เรียบร้อยแล้ว'); }
                     setTimeout(() => { uploadQueue.value = uploadQueue.value.filter(j => j.id !== job.id); }, 2500);
                 } else { job.status = 'error'; job.errorMsg = res ? res.error : 'Unknown Error'; showToast('error', 'เกิดข้อผิดพลาด', job.errorMsg); }
-            } catch (err) { console.error("Queue UI Error:", err); } finally { isProcessingQueue.value = false; setTimeout(() => processQueue(), 500); }
+            } catch (err) { console.error("Queue UI Error:", err);
+            } finally { isProcessingQueue.value = false; setTimeout(() => processQueue(), 500); }
         };
         const onFailure = (err) => { try { console.error("API Failure:", err); job.status = 'error'; job.errorMsg = err.message || err.toString(); showToast('error', 'ข้อผิดพลาดระบบ', job.errorMsg); } finally { isProcessingQueue.value = false; setTimeout(() => processQueue(), 500); } };
-
         try {
             let res;
-            if (job.type === 'upload') { res = await apiCall('saveDocument', JSON.parse(JSON.stringify(job.data))); } else if (job.type === 'delete') { res = await apiCall('deleteDocument', job.data); } else if (job.type === 'bulk-delete') { res = await apiCall('deleteBulkDocuments', job.data); }
+            if (job.type === 'upload') { res = await apiCall('saveDocument', JSON.parse(JSON.stringify(job.data)));
+            } else if (job.type === 'delete') { res = await apiCall('deleteDocument', job.data);
+            } else if (job.type === 'bulk-delete') { res = await apiCall('deleteBulkDocuments', job.data); }
             onSuccess(res);
         } catch (err) { console.error("Payload Serialize Error:", err); onFailure(err); }
     };
@@ -1044,20 +1094,21 @@ createApp({
     
     const previewDoc = (d) => { if(d.fileUrl === '#') return; let url = d.fileUrl; if(url.includes('drive.google.com')) { if(url.includes('/view')) url = url.replace('/view', '/preview'); else if(url.includes('export=view')) url = url.replace(/\/uc\?export=view&id=([-\w]+)/, '/file/d/$1/preview'); else if(!url.includes('/preview') && !url.includes('export=')) url += '/preview'; } previewUrl.value = url; isPreviewPdf.value = true; };
     const handleProxyDownload = async (d) => { 
-        if(d.fileUrl === '#') return; let fileId = ""; const match = d.fileUrl.match(/[-\w]{25,}/); if (match) fileId = match[0]; if(!fileId) { window.open(d.fileUrl, '_blank'); return; }
+        if(d.fileUrl === '#') return;
+        let fileId = ""; const match = d.fileUrl.match(/[-\w]{25,}/); if (match) fileId = match[0]; if(!fileId) { window.open(d.fileUrl, '_blank'); return; }
         showToast('info', 'Requesting Download...', 'กำลังเตรียมไฟล์ของคุณ...');
         try { const res = await apiCall('getFileContentForClient', d.fileUrl); if (res.success) { const a = document.createElement("a"); a.href = `data:${res.mimeType};base64,${res.data}`; a.download = res.name; document.body.appendChild(a); a.click(); document.body.removeChild(a); showToast('success', 'Download Ready', 'ดาวน์โหลดไฟล์สำเร็จ'); } else { showToast('error', 'Download Error', 'ไม่มีสิทธิ์เข้าถึงไฟล์นี้'); } } catch(err) { showToast('error', 'Download Error', err.toString()); }
     };
     const printFromPreview = () => { if(!previewUrl.value) return; handleProxyPrint(previewUrl.value); };
     
-    // 🟢 ระบบ Print Native แบบใหม่ ไม่แปลภาพ (PDF JS ถูกลบไปแล้ว) 🟢
+    // 🛠️ แก้ไข: Memory Leak จากระบบ Print
     const handleProxyPrint = async (docUrl) => {
-        if(!docUrl || docUrl === '#') return; 
+        if(!docUrl || docUrl === '#') return;
         let isImage = false; 
         if(docUrl.match(/\.(jpeg|jpg|gif|png|bmp|webp)($|\?)/i)) { isImage = true; }
         
         if(isImage) { 
-            const printWindow = window.open('', '_blank'); 
+            const printWindow = window.open('', '_blank');
             printWindow.document.write(`<html><head><title>Print Image</title></head><body style="margin:0;display:flex;justify-content:center;align-items:center;height:100vh;"><img src="${docUrl}" onload="setTimeout(()=>{window.print();window.close();}, 500);" style="max-width:100%;max-height:100%;"></body></html>`); 
             printWindow.document.close(); 
             return; 
@@ -1065,40 +1116,40 @@ createApp({
 
         showToast('info', 'Preparing Print...', 'กำลังส่งไฟล์ PDF เข้าเครื่องปริ้น...');
         try { 
-            const res = await apiCall('getFileContentForClient', docUrl); 
+            const res = await apiCall('getFileContentForClient', docUrl);
             if (res.success) { 
-                const byteCharacters = atob(res.data); 
+                const byteCharacters = atob(res.data);
                 const byteNumbers = new Array(byteCharacters.length); 
                 for (let i = 0; i < byteCharacters.length; i++) { 
-                    byteNumbers[i] = byteCharacters.charCodeAt(i); 
+                    byteNumbers[i] = byteCharacters.charCodeAt(i);
                 } 
-                const byteArray = new Uint8Array(byteNumbers); 
+                const byteArray = new Uint8Array(byteNumbers);
                 const blob = new Blob([byteArray], {type: res.mimeType || 'application/pdf'}); 
                 const blobUrl = URL.createObjectURL(blob); 
                 
                 const iframe = document.createElement('iframe'); 
-                iframe.style.display = 'none'; 
+                iframe.style.display = 'none';
                 iframe.src = blobUrl; 
                 document.body.appendChild(iframe); 
                 
-iframe.onload = () => { 
-    iframe.contentWindow.addEventListener('afterprint', () => {
-        document.body.removeChild(iframe);
-        URL.revokeObjectURL(blobUrl);
-    });
-    
-    setTimeout(() => { 
-        iframe.contentWindow.focus(); 
-        iframe.contentWindow.print(); 
-    }, 500); 
-};
-               
+                iframe.onload = () => { 
+                    // ใช้ afterprint เพื่อเคลียร์ RAM ทันทีที่หน้า Print ถูกปิด
+                    iframe.contentWindow.addEventListener('afterprint', () => {
+                        document.body.removeChild(iframe);
+                        URL.revokeObjectURL(blobUrl);
+                    });
+
+                    setTimeout(() => { 
+                        iframe.contentWindow.focus(); 
+                        iframe.contentWindow.print(); 
+                    }, 500); 
+                };
                 showToast('success', 'Print Job Sent', 'ส่งคำสั่งปริ้นสำเร็จ'); 
             } else { 
-                window.open(docUrl, '_blank'); 
+                window.open(docUrl, '_blank');
             } 
         } catch(err) { 
-            showToast('error', 'Print Error', 'เกิดข้อผิดพลาด เปิดแท็บใหม่แทน'); 
+            showToast('error', 'Print Error', 'เกิดข้อผิดพลาด เปิดแท็บใหม่แทน');
             window.open(docUrl, '_blank'); 
         }
     };
@@ -1112,7 +1163,51 @@ iframe.onload = () => {
     const formatDate = (d, t) => { if(!d) return '-'; const dt = new Date(d); const format = settings.value.dateFormat || 'dd/mm/yyyy'; const isThai = format.includes('bbbb') || format.includes('BBBB'); const isText = format.includes('MMM'); let year = dt.getFullYear(); if(isThai) year += 543; let dateStr = ''; if(isText) { const thMonths = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.']; const enMonths = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']; const month = isThai ? thMonths[dt.getMonth()] : enMonths[dt.getMonth()]; dateStr = dt.getDate() + ' ' + month + ' ' + year; } else { const month = String(dt.getMonth()+1).padStart(2,'0'); const day = String(dt.getDate()).padStart(2,'0'); dateStr = day + '/' + month + '/' + year; } if(t) return dateStr + ' ' + String(dt.getHours()).padStart(2,'0') + ':' + String(dt.getMinutes()).padStart(2,'0'); return dateStr; };
     const statusBadge = (s) => ({ 'Active': 'bg-sky-100 text-sky-800 border-sky-200 dark:bg-sky-900/30 dark:text-sky-300 dark:border-sky-800', 'Warning': 'bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-800', 'Expired': 'bg-rose-100 text-rose-800 border-rose-200 dark:bg-rose-900/30 dark:text-rose-300 dark:border-rose-800', 'Resigned': 'bg-slate-200 text-slate-600 border-slate-300 dark:bg-slate-700 dark:text-slate-400 dark:border-slate-600' }[s] || 'bg-slate-100');
     
-    const initCharts = () => { nextTick(() => { const c2=document.getElementById('c2'), cf=document.getElementById('forecastChart'); if(!c2) return; if(chartInstance2) chartInstance2.destroy(); if(chartInstanceForecast) chartInstanceForecast.destroy(); chartInstance2 = new Chart(c2, { type:'doughnut', data:{labels:['Active','Warn','Exp'], datasets:[{data:[stats.value[1].value, stats.value[2].value, stats.value[3].value], backgroundColor:['#0ea5e9','#f59e0b','#f43f5e'], borderWidth:0}]}, options:{ responsive: true, maintainAspectRatio: false, cutout:'75%', plugins:{legend:{display:false}} } }); const months = ['Jan','Feb','Mar','Apr','May','Jun']; const today = new Date(); const labels = [], data = []; for(let i=0; i<6; i++) { const d = new Date(today.getFullYear(), today.getMonth()+i, 1); labels.push(months[d.getMonth()]); data.push((documents.value||[]).filter(doc => { if(!doc.expDate) return false; const exp = new Date(doc.expDate); return exp.getMonth() === d.getMonth() && exp.getFullYear() === d.getFullYear(); }).length); } chartInstanceForecast = new Chart(cf, { type: 'line', data: { labels: labels, datasets: [{ label: 'Expiring', data: data, borderColor: '#0ea5e9', tension: 0.4, fill:true, backgroundColor: 'rgba(14, 165, 233, 0.1)' }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: {display:false} }, scales: { y: { beginAtZero: true, grid:{borderDash:[4,4]} }, x: { grid:{display:false} } } } }); }); };
+    // 🛠️ แก้ไข: อัปเดต Chart แทนการทำลาย (Destroy)
+    const initCharts = () => { 
+        nextTick(() => { 
+            const c2=document.getElementById('c2'), cf=document.getElementById('forecastChart'); 
+            if(!c2) return; 
+            
+            const doughnutData = [stats.value[1].value, stats.value[2].value, stats.value[3].value];
+
+            if(chartInstance2) {
+                chartInstance2.data.datasets[0].data = doughnutData;
+                chartInstance2.update();
+            } else {
+                chartInstance2 = new Chart(c2, { 
+                    type:'doughnut', 
+                    data:{labels:['Active','Warn','Exp'], datasets:[{data:doughnutData, backgroundColor:['#0ea5e9','#f59e0b','#f43f5e'], borderWidth:0}]}, 
+                    options:{ responsive: true, maintainAspectRatio: false, cutout:'75%', plugins:{legend:{display:false}} } 
+                });
+            }
+             
+            const months = ['Jan','Feb','Mar','Apr','May','Jun']; 
+            const today = new Date(); 
+            const labels = [], data = []; 
+            for(let i=0; i<6; i++) { 
+                const d = new Date(today.getFullYear(), today.getMonth()+i, 1); 
+                labels.push(months[d.getMonth()]); 
+                data.push((documents.value||[]).filter(doc => { 
+                    if(!doc.expDate) return false; 
+                    const exp = new Date(doc.expDate); 
+                    return exp.getMonth() === d.getMonth() && exp.getFullYear() === d.getFullYear();
+                }).length); 
+            } 
+
+            if(chartInstanceForecast) {
+                chartInstanceForecast.data.labels = labels;
+                chartInstanceForecast.data.datasets[0].data = data;
+                chartInstanceForecast.update();
+            } else {
+                chartInstanceForecast = new Chart(cf, { 
+                    type: 'line', 
+                    data: { labels: labels, datasets: [{ label: 'Expiring', data: data, borderColor: '#0ea5e9', tension: 0.4, fill:true, backgroundColor: 'rgba(14, 165, 233, 0.1)' }] }, 
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: {display:false} }, scales: { y: { beginAtZero: true, grid:{borderDash:[4,4]} }, x: { grid:{display:false} } } } 
+                });
+            }
+        }); 
+    };
     
     const openAddUser = () => { Object.assign(userForm, {username:'', password:'', name:'', role:'User'}); isUserEdit.value = false; showUserModal.value = true; };
     const editUser = (u) => { Object.assign(userForm, u); userForm.password = ''; isUserEdit.value = true; showUserModal.value = true; };
@@ -1120,10 +1215,9 @@ iframe.onload = () => {
     const deleteUser = async (u) => { if(confirm('Delete User?')) { try { const res = await apiCall('deleteUser', u); usersList.value=res; showToast('success', 'User Deleted'); } catch(err){} } };
     const toggleUser = async (u) => { u.status = u.status==='suspended'?'active':'suspended'; try { await apiCall('toggleUserStatus', {username: u.username, status: u.status}); showToast('info', 'User Status Changed'); } catch(err){} };
     const clearLogs = async () => { if(!confirm('Clear old logs?')) return; loading.value = true; try { const res = await apiCall('clearSystemLogs'); loading.value = false; if (res.success) { if (res.count > 0) showToast('success', 'Cleared ' + res.count + ' items'); else showToast('info', 'Logs not full'); loadData(); } else { showToast('error', res.error); } } catch(err) { loading.value=false; } };
-    
     const downloadTemplate = () => { const wb = XLSX.utils.book_new(); const wsData = [['empId','firstName','lastName','nationalId','dept','docType','startDate','expDate','remark']]; wsData.push(['66001','John','Doe','1234567890123','IT','Contract','2024-01-01','2025-01-01','Test Remark']); const ws = XLSX.utils.aoa_to_sheet(wsData); XLSX.utils.book_append_sheet(wb, ws, "Template"); XLSX.writeFile(wb, "EDMS_Import_Template.xlsx"); };
     const handleImportFile = (e) => { const f = e.target.files[0]; if(!f) return; loading.value = true; const reader = new FileReader(); reader.onload = async (e) => { const data = new Uint8Array(e.target.result); const workbook = XLSX.read(data, {type: 'array', cellDates: true}); const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]); if(json.length > 0) { const cleanDate = (d) => { if (!d) return ''; if (d instanceof Date) { d.setHours(d.getHours() + 12); const year = d.getFullYear(); const month = String(d.getMonth() + 1).padStart(2, '0'); const day = String(d.getDate()).padStart(2, '0'); return year + '-' + month + '-' + day; } return String(d).trim(); }; const cleanedDocs = json.map(doc => ({ ...doc, startDate: cleanDate(doc.startDate), expDate: cleanDate(doc.expDate) })); const payload = JSON.parse(JSON.stringify(cleanedDocs)); try { await apiCall('importBulkDocuments', payload); loading.value=false; showImportModal.value=false; loadData(); showToast('success', 'Imported ' + cleanedDocs.length + ' items'); } catch(err) { loading.value=false; showToast('error', 'Import Error'); } } else { loading.value=false; showToast('error','Empty File'); } }; reader.readAsArrayBuffer(f); };
-
+    
     return { 
        componentKey, loading, isLoggedIn, currentUser, isAdmin, loginForm, loginLoading, currentPage, pages, stats, settings, searchQuery, searchTags, filteredEmployees, empSuggestions, form, showModal, departments, docTypes, newItemInput, handleLogin, logout, openModal, editDoc, deleteDoc, submitForm, handleFileUpload, saveSettings, previewDoc, previewUrl, isPreviewPdf, formatDate, toggleResign, usersList, deleteUser, changePage, showUserModal, userForm, saveUser, toggleUser, openAddUser, editUser, isUserEdit, searchSuggestions, selectSuggestion, addSearchTag, removeTag, resetFilters, selectEmployee, addItem, removeItem, activeSetting, activeActionMenu, openActionMenu, closeAllDropdowns, hasFilters, showSuggestions, filterStartDate, filterEndDate, statusBadge, showFilters, logs, currentDate, currentTime, showImportModal, downloadTemplate, handleImportFile, handleProxyDownload, handleProxyPrint, printFromPreview, selectedDepts, selectedStatuses, selectedDocTypes, activeFilterDropdown, toggleFilterDropdown, showResigned, loadData, isDark, toggleTheme, collapsedCards, toggleCardCollapse, canManage, handleBgUpload, clearLogs, getSafeImgUrl, fileUploadInput, isDragging, handleDrop, notifications, showToast, removeNotification, 
        showDashboardTable, dashboardFilter, dashboardDocs, exportDashboardDocs, toggleSelectAll, uploadQueue, isQueueExpanded, isProcessingQueue, removeFromQueue, confirmBulkDelete, showPassword, checkPermission, canPreview, showEmpDropdown, handleEmpInput, addDuration, setEndOfYear, customDuration, customUnit, applyCustomDuration, startDateText, expDateText, sortThaiEng, showExportModal, exportConfig, executeAdvancedExport,
