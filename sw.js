@@ -11,7 +11,7 @@ self.addEventListener('install', event => {
   self.skipWaiting(); // บังคับให้ SW ตัวใหม่ทำงานทันที
 });
 
-// เพิ่ม Event Activate เพื่อลบ Cache เก่าทิ้ง
+// ลบ Cache เก่าทิ้งเมื่อมีการอัปเดตเวอร์ชัน
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(keys => 
@@ -24,7 +24,8 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
   event.respondWith(
     caches.match(event.request).then(response => {
-      return response || fetch(event.request);
+      if (response) { return response; }
+      return fetch(event.request);
     })
   );
 });
