@@ -45,9 +45,9 @@
             'float': 'float 6s ease-in-out infinite',
           },
           keyframes: {
-            fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
-            slideUp: { '0%': { opacity: '0', transform: 'translateY(10px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
-            float: { '0%, 100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-10px)' } }
+             fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
+             slideUp: { '0%': { opacity: '0', transform: 'translateY(10px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
+             float: { '0%, 100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-10px)' } }
           }
         }
       }
@@ -78,7 +78,6 @@
     .settings-nav-item.active { background: #e0f2fe; color: #0284c7; font-weight: 600; }
     html.dark .settings-nav-item.active { background: #0c4a6e; color: #38bdf8; }
     .animate-slide-up { animation: slideUp 0.3s ease-out forwards; }
-    @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     .cb-style { accent-color: #0ea5e9; width: 16px; height: 16px; cursor: pointer; }
     .custom-select-trigger { cursor: pointer; justify-content: space-between; position: relative; }
     .custom-dropdown-menu { position: absolute; top: 100%; left: 0; width: 100%; max-height: 240px; overflow-y: auto; background: white; border: 1px solid #e2e8f0; border-radius: 8px; z-index: 50; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); margin-top: 4px; padding: 6px; color: #475569; }
@@ -228,7 +227,7 @@
                  <div class="glass-card p-6 lg:col-span-2">
                     <h3 class="font-bold text-slate-700 dark:text-slate-200 text-sm mb-6 flex items-center gap-2"><i class="fa-solid fa-chart-line text-brand-500"></i> Expiry Forecast</h3>
                     <div class="h-64 w-full relative"><canvas id="forecastChart"></canvas></div>
-                  </div>
+                 </div>
                  <div class="glass-card p-6 flex flex-col">
                      <h3 class="font-bold text-slate-700 dark:text-slate-200 text-sm mb-6 flex items-center gap-2"><i class="fa-solid fa-chart-pie text-brand-500"></i> Status Overview</h3>
                     <div class="h-48 relative flex-1"><canvas id="c2"></canvas>
@@ -252,7 +251,7 @@
                      </div>
                  </div>
                  <div class="max-h-[400px] overflow-y-auto">
-                   <table class="w-full text-xs text-left">
+                    <table class="w-full text-xs text-left">
                          <thead class="bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 font-bold uppercase sticky top-0 z-10 shadow-sm">
                              <tr>
                                  <th class="px-5 py-3">Emp ID</th>
@@ -274,7 +273,7 @@
                                      <button v-if="doc.fileUrl!=='#' && canPreview(doc.fileName)" @click="previewDoc(doc)" class="text-brand-600 hover:underline">Preview</button>
                                      <span class="text-slate-300" v-if="doc.fileUrl!=='#' && canPreview(doc.fileName)">|</span>
                                      <button v-if="doc.fileUrl!=='#'" @click="handleProxyDownload(doc)" class="text-brand-600 hover:underline">Download</button>
-                                 </td>
+                                  </td>
                               </tr>
                          </tbody>
                      </table>
@@ -336,7 +335,7 @@
              </div>
 
              <div class="space-y-6 pb-4">
-               <div v-for="emp in paginatedEmployees" :key="emp.empId" class="glass-card animate-slide-up overflow-hidden group relative transition-all duration-300 ring-1 ring-slate-100 dark:ring-slate-700 hover:shadow-lg bg-white dark:bg-slate-800" :class="{'opacity-75 grayscale-[0.5]': emp.isResigned}">
+               <div v-for="emp in visibleEmployees" :key="emp.empId" class="glass-card animate-slide-up overflow-hidden group relative transition-all duration-300 ring-1 ring-slate-100 dark:ring-slate-700 hover:shadow-lg bg-white dark:bg-slate-800" :class="{'opacity-75 grayscale-[0.5]': emp.isResigned}">
                     <div v-if="emp.isResigned" class="absolute top-0 right-0 bg-slate-500 text-white text-[10px] font-bold px-3 py-1 rounded-bl-xl z-10 shadow-sm">RESIGNED</div>
                     <div class="p-5 flex flex-wrap md:flex-nowrap items-center gap-5 border-b border-slate-100 dark:border-slate-700 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm">
                        <div class="w-14 h-14 rounded-full bg-gradient-to-br from-brand-50 to-slate-100 dark:from-slate-700 dark:to-slate-600 flex items-center justify-center text-brand-600 dark:text-slate-200 font-bold text-xl shrink-0 border-2 border-white dark:border-slate-600 shadow-md">
@@ -351,7 +350,7 @@
                           </div>
                           <div class="flex flex-wrap items-center gap-2">
                               <div class="flex items-center gap-2 bg-brand-50 dark:bg-brand-900/20 px-2 py-1 rounded border border-brand-100 dark:border-brand-800/50">
-                                  <i class="fa-solid fa-id-badge text-brand-500 text-xs"></i>
+                                 <i class="fa-solid fa-id-badge text-brand-500 text-xs"></i>
                                   <span class="font-mono font-bold text-xs text-brand-700 dark:text-brand-300">{{ emp.empId }}</span>
                               </div>
                               <div class="text-slate-300 dark:text-slate-600">|</div>
@@ -463,32 +462,16 @@
                         </div>
                     </div>
                 </div>
+                
+                <div ref="observerTarget" class="h-10 flex items-center justify-center text-slate-400 mt-6 pb-20">
+                    <span v-if="displayLimit < filteredEmployees.length" class="animate-pulse flex items-center gap-2">
+                        <i class="fa-solid fa-circle-notch fa-spin"></i> กำลังโหลดข้อมูลเพิ่ม...
+                    </span>
+                    <span v-else-if="filteredEmployees.length > 0" class="text-xs font-bold bg-slate-100 dark:bg-slate-800 px-4 py-2 rounded-full shadow-sm border border-slate-200 dark:border-slate-700">
+                        แสดงข้อมูลครบทั้งหมด {{ filteredEmployees.length }} รายการแล้ว
+                    </span>
+                </div>
              </div>
-
-             <div v-if="filteredEmployees.length > 0" class="glass-card p-4 flex flex-col sm:flex-row justify-between items-center gap-4 animate-fade-in mt-4 mb-20">
-                 <div class="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-slate-400">
-                     แสดง
-                     <select v-model="itemsPerPage" class="bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded px-2 py-1 outline-none cursor-pointer">
-                         <option :value="50">50</option>
-                         <option :value="100">100</option>
-                         <option value="all">ทั้งหมด</option>
-                     </select>
-                     รายการ (รวม {{ filteredEmployees.length }} คน)
-                 </div>
-                 
-                 <div v-if="itemsPerPage !== 'all' && totalPages > 1" class="flex items-center gap-1 bg-slate-50 dark:bg-slate-700/50 p-1 rounded-lg border border-slate-100 dark:border-slate-700">
-                     <button @click="changeListCurrentPage(currentListCurrentPage - 1)" :disabled="currentListCurrentPage === 1" class="w-8 h-8 flex items-center justify-center rounded-md hover:bg-white dark:hover:bg-slate-600 disabled:opacity-30 disabled:cursor-not-allowed transition shadow-sm text-slate-500 dark:text-slate-300">
-                         <i class="fa-solid fa-chevron-left text-[10px]"></i>
-                     </button>
-                     <span class="px-3 text-xs font-bold text-brand-600 dark:text-brand-400">
-                         หน้า {{ currentListCurrentPage }} / {{ totalPages }}
-                     </span>
-                     <button @click="changeListCurrentPage(currentListCurrentPage + 1)" :disabled="currentListCurrentPage === totalPages" class="w-8 h-8 flex items-center justify-center rounded-md hover:bg-white dark:hover:bg-slate-600 disabled:opacity-30 disabled:cursor-not-allowed transition shadow-sm text-slate-500 dark:text-slate-300">
-                         <i class="fa-solid fa-chevron-right text-[10px]"></i>
-                     </button>
-                 </div>
-             </div>
-
        </div>
 
         <div v-if="currentPage === 3 && isAdmin" class="max-w-6xl mx-auto animate-slide-up pb-10">
@@ -512,11 +495,11 @@
                         <div v-if="activeSetting==='branding'" class="space-y-8 animate-fade-in">
                             <div><h2 class="text-xl font-bold text-slate-800 dark:text-white mb-1">Branding</h2><p class="text-xs text-slate-500">Customize the look and feel of your EDMS.</p></div>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div class="col-span-2"><label class="label-xs">Company Name</label><div class="input-compact"><input v-model="settings.companyName" class="input-plain font-bold text-brand-700" placeholder="My Enterprise"></div></div>
+                                 <div class="col-span-2"><label class="label-xs">Company Name</label><div class="input-compact"><input v-model="settings.companyName" class="input-plain font-bold text-brand-700" placeholder="My Enterprise"></div></div>
                                  <div><label class="label-xs">Logo URL</label><div class="input-compact"><input v-model="settings.logoUrl" class="input-plain" placeholder="https://..."></div></div>
                                  <div><label class="label-xs">Logo Height (px)</label><div class="input-compact"><input v-model="settings.logoHeight" type="number" class="input-plain"></div></div>
                                  <div class="col-span-2"><label class="label-xs">Login Background Image</label><div class="flex gap-3"><div class="input-compact flex-1"><input v-model="settings.loginBgUrl" class="input-plain text-slate-500" placeholder="https://..." readonly></div><label class="h-9 px-4 flex items-center bg-slate-100 rounded-lg cursor-pointer hover:bg-slate-200 text-xs font-bold text-slate-600 transition"><input type="file" @change="handleBgUpload" class="hidden"><i class="fa-solid fa-upload mr-2"></i> Upload</label></div></div>
-                                 <div class="col-span-2"><label class="label-xs">System Announcement</label><textarea v-model="settings.systemAnnouncement" class="w-full border border-slate-200 rounded-lg p-3 text-sm focus:ring-2 focus:ring-brand-500 outline-none resize-none h-24" placeholder="Announcement message displayed on dashboard..."></textarea></div>
+                                <div class="col-span-2"><label class="label-xs">System Announcement</label><textarea v-model="settings.systemAnnouncement" class="w-full border border-slate-200 rounded-lg p-3 text-sm focus:ring-2 focus:ring-brand-500 outline-none resize-none h-24" placeholder="Announcement message displayed on dashboard..."></textarea></div>
                             </div>
                         </div>
 
@@ -541,7 +524,7 @@
 
                         <div v-if="activeSetting==='logs'" class="space-y-6 animate-fade-in">
                             <div class="flex justify-between items-center"><h2 class="text-xl font-bold text-slate-800">Activity Logs</h2><button @click="clearLogs" class="text-xs text-red-500 hover:text-white border border-red-200 hover:bg-red-500 font-bold rounded px-4 py-2 transition">Clear History</button></div>
-                            <div class="overflow-hidden rounded-xl border border-slate-200"><table class="w-full text-xs text-left"><thead class="bg-slate-50 text-slate-500 font-bold uppercase"><tr><th class="px-4 py-3">Time</th><th class="px-4 py-3">User</th><th class="px-4 py-3">Action</th></tr></thead><tbody class="divide-y divide-slate-100"><tr v-for="(log, i) in logs" :key="i" class="hover:bg-slate-50"><td class="px-4 py-2.5 font-mono text-slate-500">{{ log.time }}</td><td class="px-4 py-2.5 font-bold">{{ log.user }}</td><td class="px-4 py-2.5">{{ log.action }}</td></tr></tbody></table></div>
+                             <div class="overflow-hidden rounded-xl border border-slate-200"><table class="w-full text-xs text-left"><thead class="bg-slate-50 text-slate-500 font-bold uppercase"><tr><th class="px-4 py-3">Time</th><th class="px-4 py-3">User</th><th class="px-4 py-3">Action</th></tr></thead><tbody class="divide-y divide-slate-100"><tr v-for="(log, i) in logs" :key="i" class="hover:bg-slate-50"><td class="px-4 py-2.5 font-mono text-slate-500">{{ log.time }}</td><td class="px-4 py-2.5 font-bold">{{ log.user }}</td><td class="px-4 py-2.5">{{ log.action }}</td></tr></tbody></table></div>
                         </div>
                         <div class="mt-8 pt-6 border-t border-slate-100 flex justify-end"><button @click="saveSettings" class="bg-gradient-to-r from-brand-600 to-brand-500 text-white px-8 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-brand-500/30 hover:shadow-brand-500/50 hover:-translate-y-0.5 transition flex items-center gap-2"><i class="fa-solid fa-save"></i> Save Changes</button></div>
                     </div>
@@ -575,19 +558,19 @@
               <div>
                   <label class="label-xs mb-2">ขอบเขตข้อมูล (Data Scope)</label>
                   <div class="flex gap-4">
-                      <label class="flex items-center gap-2 cursor-pointer text-sm text-slate-700 dark:text-slate-200">
+                       <label class="flex items-center gap-2 cursor-pointer text-sm text-slate-700 dark:text-slate-200">
                           <input type="radio" v-model="exportConfig.scope" value="filtered" class="accent-emerald-500 w-4 h-4"> ข้อมูลที่ค้นหา ({{ filteredEmployees.length }} รายการ)
                       </label>
                       <label class="flex items-center gap-2 cursor-pointer text-sm text-slate-700 dark:text-slate-200">
                           <input type="radio" v-model="exportConfig.scope" value="all" class="accent-emerald-500 w-4 h-4"> ข้อมูลทั้งหมด
                       </label>
                   </div>
-              </div>
+               </div>
               <div>
                   <label class="label-xs mb-2">รูปแบบรายงาน (Format)</label>
                   <div class="flex flex-col gap-2">
                       <label class="flex items-center gap-2 cursor-pointer text-sm text-slate-700 dark:text-slate-200">
-                          <input type="radio" v-model="exportConfig.format" value="standard" class="accent-emerald-500 w-4 h-4"> แบบรายการปกติ (Standard List)
+                           <input type="radio" v-model="exportConfig.format" value="standard" class="accent-emerald-500 w-4 h-4"> แบบรายการปกติ (Standard List)
                       </label>
                       <label class="flex items-center gap-2 cursor-pointer text-sm text-slate-700 dark:text-slate-200">
                           <input type="radio" v-model="exportConfig.format" value="matrix" class="accent-emerald-500 w-4 h-4"> แบบสรุปรายบุคคล (Matrix / Pivot)
@@ -609,7 +592,7 @@
               </div>
           </div>
           <div class="p-4 border-t border-slate-100 dark:border-slate-700 flex justify-end gap-3 bg-slate-50 dark:bg-slate-900/50">
-              <button @click="showExportModal = false" class="px-5 py-2 rounded-lg text-xs font-bold text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 transition">ยกเลิก</button>
+               <button @click="showExportModal = false" class="px-5 py-2 rounded-lg text-xs font-bold text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 transition">ยกเลิก</button>
               <button @click="executeAdvancedExport" class="bg-emerald-600 text-white px-6 py-2 rounded-lg text-xs font-bold shadow-lg shadow-emerald-500/30 hover:bg-emerald-700 hover:-translate-y-0.5 transition flex items-center gap-2">
                   <i class="fa-solid fa-download"></i> ดาวน์โหลดไฟล์
               </button>
@@ -633,7 +616,7 @@
                       <div class="relative group">
                           <label class="label-xs">รหัสพนักงาน (Emp ID)</label>
                           <div class="input-compact relative"><i class="fa-solid fa-magnifying-glass text-slate-400 mr-2"></i><input v-model="form.empId" @input="handleEmpInput" class="input-plain font-bold text-brand-700 dark:text-brand-400" placeholder="กรอกรหัส หรือ ค้นหา..." :readonly="!form.isNew"></div>
-                          <div v-if="showEmpDropdown && empSuggestions.length > 0" class="absolute top-full left-0 w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 shadow-xl rounded-lg mt-1 z-50 max-h-40 overflow-y-auto">
+                           <div v-if="showEmpDropdown && empSuggestions.length > 0" class="absolute top-full left-0 w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 shadow-xl rounded-lg mt-1 z-50 max-h-40 overflow-y-auto">
                               <div v-for="emp in empSuggestions" :key="emp.empId" @click="selectEmployee(emp)" class="px-3 py-2 hover:bg-brand-50 dark:hover:bg-slate-700 cursor-pointer border-b border-slate-50 dark:border-slate-700 last:border-0"><div class="text-xs font-bold text-brand-600">{{ emp.empId }}</div><div class="text-[10px] text-slate-500 dark:text-slate-400">{{ emp.firstName }} {{ emp.lastName }}</div></div>
                           </div>
                       </div>
@@ -663,10 +646,10 @@
                                       <option value="year">ปี</option>
                                    </select>
                                   <button type="button" @click="applyCustomDuration" class="h-7 w-7 flex items-center justify-center bg-orange-500 text-white rounded hover:bg-orange-600 transition shadow-sm" title="คำนวณวันหมดอายุ">
-                                       <i class="fa-solid fa-calculator text-[10px]"></i>
+                                      <i class="fa-solid fa-calculator text-[10px]"></i>
                                   </button>
                               </div>
-                          </div>
+                           </div>
                       </div>
                       <div class="flex-1 grid grid-cols-12 gap-4 min-h-0">
                           <div class="col-span-5 flex flex-col"><label class="label-xs">หมายเหตุ (Remark)</label><textarea v-model="form.remark" class="flex-1 w-full border border-slate-200 dark:border-slate-600 rounded-lg p-2 text-xs resize-none bg-slate-50 dark:bg-slate-700/50 focus:ring-2 focus:ring-brand-500 outline-none" placeholder="รายละเอียดเพิ่มเติม..."></textarea></div>
@@ -727,7 +710,7 @@
                            'bg-emerald-50 border-emerald-200 dark:bg-emerald-900/20 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300': job.status === 'success',
                            'bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800 text-red-700 dark:text-red-300': job.status === 'error'
                        }">
-                      <div class="flex items-center gap-3 truncate pr-2">
+                       <div class="flex items-center gap-3 truncate pr-2">
                           <i v-if="job.status === 'pending'" class="fa-regular fa-clock text-slate-400 text-lg"></i>
                           <i v-else-if="job.status === 'processing'" class="fa-solid fa-circle-notch fa-spin text-blue-500 text-lg"></i>
                           <i v-else-if="job.status === 'success'" class="fa-solid fa-circle-check text-emerald-500 text-lg"></i>
@@ -748,7 +731,6 @@
   </div>
 
 </div>
-
 
 <script>
 // ⚠️ ใส่ Web App URL ของคุณตรงนี้!
@@ -785,8 +767,8 @@ const apiCall = async (action, data = null, retries = 3, backoff = 1000) => {
             return result;
         } catch (error) {
             console.warn(`API Attempt ${i + 1} failed:`, error);
-            if (i === retries - 1) throw error; // ถ้าครบโควต้าแล้วให้ throw error
-            await new Promise(res => setTimeout(res, backoff * Math.pow(2, i))); // Exponential backoff
+            if (i === retries - 1) throw error; 
+            await new Promise(res => setTimeout(res, backoff * Math.pow(2, i))); 
         }
     }
 };
@@ -814,8 +796,9 @@ createApp({
     const loading=ref(true), currentPage=ref(0), documents=ref([]), employees=ref([]), departments=ref([]), docTypes=ref([]), usersList=ref([]);
     const settings=ref({}), showModal=ref(false), showUserModal=ref(false), showImportModal=ref(false);
     
-    const itemsPerPage = ref(50);
-    const currentListCurrentPage = ref(1);
+    // 🛠️ Virtual Scroll State
+    const displayLimit = ref(20);
+    const observerTarget = ref(null);
 
     const showExportModal = ref(false);
     const exportConfig = reactive({
@@ -853,14 +836,14 @@ createApp({
     const expDateText = ref('');
     const fileUploadInput = ref(null);
 
-    // 🛠️ แก้ไข: เพิ่มระบบ Debounce ให้กับช่องค้นหา (Search)
+    // 🛠️ แก้ไข: เพิ่มระบบ Debounce ให้กับช่องค้นหา
     let searchTimeout = null;
     const debouncedSearchQuery = ref('');
     watch(searchQuery, (newVal) => {
         if (searchTimeout) clearTimeout(searchTimeout);
         searchTimeout = setTimeout(() => {
             debouncedSearchQuery.value = newVal;
-        }, 300); // ดีเลย์ 300ms เพื่อลดการประมวลผลซ้ำซ้อน
+        }, 300); 
     });
 
     const getSafeImgUrl = (url) => { if (!url) return ''; const match = url.match(/[-\w]{25,}/);
@@ -900,6 +883,13 @@ createApp({
         }, 10000);
     };
 
+    // 🛠️ Virtual Scroll Method
+    const loadMore = () => {
+        if (displayLimit.value < filteredEmployees.value.length) {
+            displayLimit.value += 20;
+        }
+    };
+
     const showToast = (type, title, msg = '') => { const id = notificationId++; notifications.value.push({ id, type, title, msg }); setTimeout(() => removeNotification(id), 3000); };
     const removeNotification = (id) => { notifications.value = notifications.value.filter(n => n.id !== id); };
     const toggleTheme = () => { isDark.value = !isDark.value; if(isDark.value) document.documentElement.classList.add('dark'); else document.documentElement.classList.remove('dark'); localStorage.setItem('edms_theme', isDark.value ? 'dark' : 'light'); };
@@ -914,7 +904,6 @@ createApp({
     const canPreview = (fileName) => { if(!fileName) return false; const ext = fileName.split('.').pop().toLowerCase(); const previewable = ['pdf', 'jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp']; return previewable.includes(ext); };
     const hasFilters = computed(() => searchTags.value.length>0 || debouncedSearchQuery.value || selectedDepts.value.length>0 || selectedStatuses.value.length>0 || selectedDocTypes.value.length>0 || filterStartDate.value || filterEndDate.value);
     
-    // 🛠️ แก้ไข: ใช้ debouncedSearchQuery แทน
     const searchSuggestions = computed(() => { if(!debouncedSearchQuery.value) return []; const q = debouncedSearchQuery.value.toLowerCase(); return employees.value.filter(e => (e.empId.toLowerCase().includes(q) || e.firstName.toLowerCase().includes(q)) && !searchTags.value.includes(e.empId)).slice(0, 5); });
     
     const selectSuggestion = (s) => { searchTags.value.push(s.empId); searchQuery.value = ''; };
@@ -950,7 +939,6 @@ createApp({
             raw = raw.filter(d => { if(!d.startDate || !d.expDate) return false; return new Date(d.startDate) <= fEnd && new Date(d.expDate) >= fStart; });
         }
         
-        // 🛠️ แก้ไข: ใช้ debouncedSearchQuery แทนการอ่านจาก searchQuery โดยตรง
         const q = debouncedSearchQuery.value.trim().toLowerCase();
         const tags = searchTags.value.map(t => t.toLowerCase());
         
@@ -972,12 +960,15 @@ createApp({
         return Object.values(grp).sort((a, b) => { return String(a.empId).localeCompare(String(b.empId), undefined, { numeric: true }); });
     });
 
-    const totalPages = computed(() => { if (itemsPerPage.value === 'all') return 1; return Math.ceil(filteredEmployees.value.length / itemsPerPage.value); });
-    const paginatedEmployees = computed(() => { if (itemsPerPage.value === 'all') return filteredEmployees.value; const start = (currentListCurrentPage.value - 1) * itemsPerPage.value; const end = start + itemsPerPage.value; return filteredEmployees.value.slice(start, end); });
-    const changeListCurrentPage = (p) => { if (p >= 1 && p <= totalPages.value) currentListCurrentPage.value = p; window.scrollTo({ top: 0, behavior: 'smooth' }); };
+    // 🛠️ Virtual Scroll Computed
+    const visibleEmployees = computed(() => {
+        return filteredEmployees.value.slice(0, displayLimit.value);
+    });
     
-    // 🛠️ แก้ไข: เพิ่ม debouncedSearchQuery ใน watch ด้วย
-    watch([debouncedSearchQuery, searchTags, selectedDepts, selectedStatuses, selectedDocTypes, itemsPerPage, filterStartDate, filterEndDate], () => { currentListCurrentPage.value = 1; });
+    // 🛠️ Reset displayLimit ทุกครั้งที่มีการ Filter
+    watch([debouncedSearchQuery, searchTags, selectedDepts, selectedStatuses, selectedDocTypes, filterStartDate, filterEndDate], () => { 
+        displayLimit.value = 20; 
+    });
     
     const toggleSelectAll = (type) => { if (type === 'dept') { if (selectedDepts.value.length === departments.value.length) selectedDepts.value = []; else selectedDepts.value = [...departments.value]; } else if (type === 'type') { if (selectedDocTypes.value.length === docTypes.value.length) selectedDocTypes.value = []; else selectedDocTypes.value = [...docTypes.value]; } else if (type === 'status') { if (selectedStatuses.value.length === 3) selectedStatuses.value = []; else selectedStatuses.value = ['Active', 'Warning', 'Expired']; } };
     const addItem = (type) => { if(!newItemInput.value) return; if(type==='dept') { departments.value.push(newItemInput.value); departments.value = sortThaiEng(departments.value); } if(type==='type') { docTypes.value.push(newItemInput.value); docTypes.value = sortThaiEng(docTypes.value); } newItemInput.value = ''; };
@@ -1011,7 +1002,26 @@ createApp({
     };
     
     const finishLoad = () => { componentKey.value++; loading.value=false; if(currentPage.value===0) initCharts(); };
-    onMounted(() => { checkLogin(); updateTime(); timeInterval = setInterval(updateTime, 1000); initSessionTracker(); startAutoSync(); });
+    
+    onMounted(() => { 
+        checkLogin(); 
+        updateTime(); 
+        timeInterval = setInterval(updateTime, 1000); 
+        initSessionTracker(); 
+        startAutoSync(); 
+        
+        // 🛠️ Observer สำหรับ Infinite Scroll
+        const observer = new IntersectionObserver((entries) => {
+            if (entries[0].isIntersecting) {
+                loadMore();
+            }
+        }, { rootMargin: '200px' });
+        
+        if (observerTarget.value) {
+            observer.observe(observerTarget.value);
+        }
+    });
+    
     onUnmounted(() => { clearInterval(timeInterval); clearInterval(sessionCheckInterval); if(autoSyncInterval) clearInterval(autoSyncInterval); window.removeEventListener('mousemove', updateActivityTime); window.removeEventListener('keydown', updateActivityTime); window.removeEventListener('click', updateActivityTime); window.removeEventListener('touchstart', updateActivityTime); });
     watch(currentPage, (v) => { if(v===0) setTimeout(initCharts, 300); closeAllDropdowns(); dashboardFilter.value=null; });
     const logout = () => { Swal.fire({ title: 'Signing Out...', text: 'See you next time!', timer: 1500, showConfirmButton: false, icon: 'success', background: isDark.value ? '#1e293b' : '#fff', color: isDark.value ? '#cbd5e1' : '#334155' }).then(() => { isLoggedIn.value=false; localStorage.removeItem('edms_user_ent'); currentPage.value=0; }); };
@@ -1133,7 +1143,6 @@ createApp({
                 document.body.appendChild(iframe); 
                 
                 iframe.onload = () => { 
-                    // ใช้ afterprint เพื่อเคลียร์ RAM ทันทีที่หน้า Print ถูกปิด
                     iframe.contentWindow.addEventListener('afterprint', () => {
                         document.body.removeChild(iframe);
                         URL.revokeObjectURL(blobUrl);
@@ -1221,7 +1230,7 @@ createApp({
     return { 
        componentKey, loading, isLoggedIn, currentUser, isAdmin, loginForm, loginLoading, currentPage, pages, stats, settings, searchQuery, searchTags, filteredEmployees, empSuggestions, form, showModal, departments, docTypes, newItemInput, handleLogin, logout, openModal, editDoc, deleteDoc, submitForm, handleFileUpload, saveSettings, previewDoc, previewUrl, isPreviewPdf, formatDate, toggleResign, usersList, deleteUser, changePage, showUserModal, userForm, saveUser, toggleUser, openAddUser, editUser, isUserEdit, searchSuggestions, selectSuggestion, addSearchTag, removeTag, resetFilters, selectEmployee, addItem, removeItem, activeSetting, activeActionMenu, openActionMenu, closeAllDropdowns, hasFilters, showSuggestions, filterStartDate, filterEndDate, statusBadge, showFilters, logs, currentDate, currentTime, showImportModal, downloadTemplate, handleImportFile, handleProxyDownload, handleProxyPrint, printFromPreview, selectedDepts, selectedStatuses, selectedDocTypes, activeFilterDropdown, toggleFilterDropdown, showResigned, loadData, isDark, toggleTheme, collapsedCards, toggleCardCollapse, canManage, handleBgUpload, clearLogs, getSafeImgUrl, fileUploadInput, isDragging, handleDrop, notifications, showToast, removeNotification, 
        showDashboardTable, dashboardFilter, dashboardDocs, exportDashboardDocs, toggleSelectAll, uploadQueue, isQueueExpanded, isProcessingQueue, removeFromQueue, confirmBulkDelete, showPassword, checkPermission, canPreview, showEmpDropdown, handleEmpInput, addDuration, setEndOfYear, customDuration, customUnit, applyCustomDuration, startDateText, expDateText, sortThaiEng, showExportModal, exportConfig, executeAdvancedExport,
-       itemsPerPage, currentListCurrentPage, totalPages, paginatedEmployees, changeListCurrentPage
+       displayLimit, visibleEmployees, loadMore, observerTarget, debouncedSearchQuery
     };
   }
 }).mount('#app');
