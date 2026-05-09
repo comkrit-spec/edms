@@ -505,28 +505,233 @@
             <div class="w-full bg-white dark:bg-slate-800 rounded-2xl shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-200 dark:border-slate-700 flex flex-col md:flex-row h-[calc(100vh-6rem)] min-h-[550px] md:h-[720px] overflow-hidden"> 
                 <div class="w-full md:w-64 bg-slate-50/50 dark:bg-slate-900/50 border-b md:border-b-0 md:border-r border-slate-200 dark:border-slate-700 flex flex-col shrink-0">
                     <div class="p-6 pb-4">
-                        <div class="w-10 h-10 bg-brand-600 rounded-xl flex items-center justify-center text-white mb-4 shadow-md shadow-brand-500/20"><i class="fa-solid fa-sliders text-xl"></i></div>
+                        <div class="w-10 h-10 bg-brand-600 rounded-xl flex items-center justify-center text-white mb-4 shadow-md shadow-brand-500/20">
+                            <i class="fa-solid fa-sliders text-xl"></i>
+                        </div>
                         <h2 class="text-xl font-bold text-slate-800 dark:text-white">Settings</h2>
                         <p class="text-xs text-slate-500 font-medium mt-1">System Preferences</p>
                     </div>
+                    
                     <nav class="flex-1 px-4 space-y-1.5 overflow-y-auto custom-scrollbar pb-6">
-                        <button @click="activeSetting='branding'" :class="[activeSetting==='branding' ? 'bg-white dark:bg-slate-800 shadow-sm ring-1 ring-slate-200 dark:ring-slate-700 text-brand-600 dark:text-brand-400' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800/50', 'w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all']"> <i class="fa-solid fa-palette w-5 text-center"></i> Branding & UI</button>
-                        <button @click="activeSetting='general'" :class="[activeSetting==='general' ? 'bg-white dark:bg-slate-800 shadow-sm ring-1 ring-slate-200 dark:ring-slate-700 text-brand-600 dark:text-brand-400' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800/50', 'w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all']"> <i class="fa-regular fa-bell w-5 text-center"></i> Notifications</button>
-                        <button @click="activeSetting='depts'" :class="[activeSetting==='depts' ? 'bg-white dark:bg-slate-800 shadow-sm ring-1 ring-slate-200 dark:ring-slate-700 text-brand-600 dark:text-brand-400' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800/50', 'w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all']"> <i class="fa-solid fa-sitemap w-5 text-center"></i> Departments</button>
-                        <button @click="activeSetting='types'" :class="[activeSetting==='types' ? 'bg-white dark:bg-slate-800 shadow-sm ring-1 ring-slate-200 dark:ring-slate-700 text-brand-600 dark:text-brand-400' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800/50', 'w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all']"> <i class="fa-solid fa-file-contract w-5 text-center"></i> Document Types</button>
-                        <button @click="activeSetting='logs'" :class="[activeSetting==='logs' ? 'bg-white dark:bg-slate-800 shadow-sm ring-1 ring-slate-200 dark:ring-slate-700 text-brand-600 dark:text-brand-400' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800/50', 'w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all']"> <i class="fa-solid fa-clock-rotate-left w-5 text-center"></i> Activity Logs</button>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-2 mb-2 mt-2">General</p>
+                        <button @click="activeSetting='branding'" :class="[activeSetting==='branding' ? 'bg-white dark:bg-slate-800 shadow-sm ring-1 ring-slate-200 dark:ring-slate-700 text-brand-600 dark:text-brand-400' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800/50', 'w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all']">
+                            <i class="fa-solid fa-palette w-5 text-center"></i> Branding & UI
+                        </button>
+                        <button @click="activeSetting='general'" :class="[activeSetting==='general' ? 'bg-white dark:bg-slate-800 shadow-sm ring-1 ring-slate-200 dark:ring-slate-700 text-brand-600 dark:text-brand-400' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800/50', 'w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all']">
+                            <i class="fa-regular fa-bell w-5 text-center"></i> Notifications
+                        </button>
+
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-2 mb-2 mt-6">Data Management</p>
+                        <button @click="activeSetting='depts'" :class="[activeSetting==='depts' ? 'bg-white dark:bg-slate-800 shadow-sm ring-1 ring-slate-200 dark:ring-slate-700 text-brand-600 dark:text-brand-400' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800/50', 'w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all']">
+                            <i class="fa-solid fa-sitemap w-5 text-center"></i> Departments
+                        </button>
+                        <button @click="activeSetting='types'" :class="[activeSetting==='types' ? 'bg-white dark:bg-slate-800 shadow-sm ring-1 ring-slate-200 dark:ring-slate-700 text-brand-600 dark:text-brand-400' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800/50', 'w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all']">
+                            <i class="fa-solid fa-file-contract w-5 text-center"></i> Document Types
+                        </button>
+
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-2 mb-2 mt-6">System</p>
+                        <button @click="activeSetting='logs'" :class="[activeSetting==='logs' ? 'bg-white dark:bg-slate-800 shadow-sm ring-1 ring-slate-200 dark:ring-slate-700 text-brand-600 dark:text-brand-400' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800/50', 'w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all']">
+                            <i class="fa-solid fa-clock-rotate-left w-5 text-center"></i> Activity Logs
+                        </button>
                     </nav>
                 </div>
+
                 <div class="flex-1 flex flex-col bg-white dark:bg-slate-800 min-w-0">
-                    <div class="flex-1 overflow-y-auto custom-scrollbar p-8 md:p-10 text-slate-500">
-                        <p class="mb-4"><i>(Settings content is unchanged and runs normally based on your original code)</i></p>
+                    
+                    <div class="flex-1 overflow-y-auto custom-scrollbar p-8 md:p-10">
+                        
+                        <div v-if="activeSetting==='branding'" class="space-y-8 animate-fade-in">
+                            <div>
+                                <h2 class="text-2xl font-bold text-slate-800 dark:text-white tracking-tight">Branding & UI</h2>
+                                <p class="text-sm text-slate-500 mt-1">Manage the visual style and branding of your workspace.</p>
+                            </div>
+                            
+                            <div class="space-y-6">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div class="col-span-2">
+                                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">Company Name</label>
+                                        <input v-model="settings.companyName" class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-semibold text-slate-800 dark:text-slate-200 focus:bg-white dark:focus:bg-slate-800 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-all" placeholder="Enter company name">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">Logo URL</label>
+                                        <input v-model="settings.logoUrl" class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-slate-200 focus:bg-white focus:ring-2 focus:ring-brand-500 outline-none transition-all" placeholder="https://...">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">Logo Height (px)</label>
+                                        <input v-model="settings.logoHeight" type="number" class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-slate-200 focus:bg-white focus:ring-2 focus:ring-brand-500 outline-none transition-all">
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">Login Background Image</label>
+                                    <div class="flex gap-3">
+                                        <input v-model="settings.loginBgUrl" class="flex-1 px-4 py-2.5 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-500 outline-none cursor-not-allowed" placeholder="Upload via button ->" readonly>
+                                        <label class="px-5 flex items-center justify-center bg-white border border-slate-200 dark:border-slate-700 dark:bg-slate-800 rounded-xl cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 text-sm font-bold text-slate-700 dark:text-slate-200 transition-colors shadow-sm">
+                                            <input type="file" @change="handleBgUpload" class="hidden">
+                                            <i class="fa-solid fa-cloud-arrow-up mr-2"></i> Upload
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">System Announcement</label>
+                                    <textarea v-model="settings.systemAnnouncement" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-slate-200 focus:bg-white focus:ring-2 focus:ring-brand-500 outline-none resize-none h-24 transition-all" placeholder="Announcement shown to all users..."></textarea>
+                                </div>
+
+                                <div class="bg-indigo-50/50 dark:bg-indigo-900/10 border border-indigo-100 dark:border-indigo-800/30 rounded-2xl p-5">
+                                    <div class="flex items-center justify-between mb-4">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-8 h-8 rounded-lg bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center"><i class="fa-solid fa-stamp"></i></div>
+                                            <div>
+                                                <h4 class="text-sm font-bold text-slate-800 dark:text-white">PDF Watermark</h4>
+                                                <p class="text-xs text-slate-500">Auto-stamp when downloaded.</p>
+                                            </div>
+                                        </div>
+                                        <label class="relative inline-flex items-center cursor-pointer">
+                                            <input type="checkbox" v-model="settings.watermarkEnabled" class="sr-only peer">
+                                            <div class="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer dark:bg-slate-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-500"></div>
+                                        </label>
+                                    </div>
+                                    
+                                    <div v-if="settings.watermarkEnabled" class="grid grid-cols-3 gap-4 pt-4 border-t border-indigo-100 dark:border-indigo-800/30 animate-fade-in">
+                                        <div class="col-span-2">
+                                            <label class="block text-[11px] font-bold text-indigo-900/70 dark:text-indigo-300 mb-1">Watermark Text (Use {user} for name)</label>
+                                            <input v-model="settings.watermarkText" class="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-indigo-200 dark:border-indigo-700/50 rounded-lg text-sm font-semibold text-indigo-700 dark:text-indigo-300 focus:ring-2 focus:ring-indigo-500 outline-none">
+                                        </div>
+                                        <div class="col-span-1">
+                                            <label class="block text-[11px] font-bold text-indigo-900/70 dark:text-indigo-300 mb-1">Size (px)</label>
+                                            <input type="number" v-model="settings.watermarkSize" class="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-indigo-200 dark:border-indigo-700/50 rounded-lg text-sm font-semibold text-indigo-700 dark:text-indigo-300 focus:ring-2 focus:ring-indigo-500 outline-none">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div v-if="activeSetting==='general'" class="space-y-8 animate-fade-in">
+                            <div>
+                                <h2 class="text-2xl font-bold text-slate-800 dark:text-white tracking-tight">Notifications & General</h2>
+                                <p class="text-sm text-slate-500 mt-1">Configure automated alerts and basic system behavior.</p>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">Date Format</label>
+                                    <div class="relative">
+                                        <select v-model="settings.dateFormat" class="w-full appearance-none px-4 py-2.5 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium text-slate-800 dark:text-slate-200 focus:bg-white focus:ring-2 focus:ring-brand-500 outline-none cursor-pointer">
+                                            <option value="dd/mm/yyyy">31/01/2024</option>
+                                            <option value="d MMM yyyy">31 Jan 2024</option>
+                                            <option value="d MMM bbbb">31 ม.ค. 2567 (Thai)</option>
+                                        </select>
+                                        <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">Session Timeout (Mins)</label>
+                                    <input type="number" v-model="settings.sessionTimeout" class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-semibold text-slate-800 dark:text-slate-200 focus:bg-white focus:ring-2 focus:ring-brand-500 outline-none">
+                                </div>
+                            </div>
+
+                            <div class="bg-amber-50/50 dark:bg-amber-900/10 border border-amber-200/80 dark:border-amber-800/30 rounded-2xl p-6 relative overflow-hidden">
+                                <i class="fa-solid fa-bell absolute -bottom-4 -right-4 text-7xl text-amber-500/10 rotate-12 pointer-events-none"></i>
+                                <h4 class="font-bold text-amber-800 dark:text-amber-500 text-sm mb-5 flex items-center gap-2">
+                                    <i class="fa-solid fa-envelope text-amber-500"></i> Expiry Notifications
+                                </h4>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
+                                    <div>
+                                        <label class="block text-[11px] font-bold text-amber-700/80 dark:text-amber-600 mb-2 uppercase tracking-wide">Days Before Expiry</label>
+                                        <div class="flex items-center gap-3">
+                                            <input type="number" v-model="settings.notifyDays" class="w-24 px-4 py-2 bg-white dark:bg-slate-800 border border-amber-200 dark:border-amber-700/50 rounded-lg text-sm font-bold text-amber-600 focus:ring-2 focus:ring-amber-500 outline-none text-center shadow-sm">
+                                            <span class="text-sm font-semibold text-amber-700 dark:text-amber-500">Days</span>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-[11px] font-bold text-amber-700/80 dark:text-amber-600 mb-2 uppercase tracking-wide">Admin Email (Report)</label>
+                                        <input v-model="settings.notifyEmail" class="w-full px-4 py-2 bg-white dark:bg-slate-800 border border-amber-200 dark:border-amber-700/50 rounded-lg text-sm font-semibold text-amber-800 dark:text-amber-200 focus:ring-2 focus:ring-amber-500 outline-none shadow-sm" placeholder="admin@company.com">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div v-if="activeSetting==='depts' || activeSetting==='types'" class="h-full flex flex-col animate-fade-in">
+                            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-6 gap-4 shrink-0">
+                                <div>
+                                    <h2 class="text-2xl font-bold text-slate-800 dark:text-white tracking-tight">{{ activeSetting==='depts'?'Departments':'Document Types' }}</h2>
+                                    <p class="text-sm text-slate-500 mt-1">Manage dropdown lists used in document forms.</p>
+                                </div>
+                                <div class="flex bg-slate-50 dark:bg-slate-900/50 p-1 rounded-xl border border-slate-200 dark:border-slate-700 w-full sm:w-auto shadow-sm">
+                                    <input v-model="newItemInput" @keyup.enter="addItem(activeSetting==='depts'?'dept':'type')" class="w-full sm:w-48 bg-transparent px-3 py-1.5 text-sm outline-none text-slate-800 dark:text-white placeholder:text-slate-400" placeholder="Add new...">
+                                    <button @click="addItem(activeSetting==='depts'?'dept':'type')" class="bg-brand-600 hover:bg-brand-700 text-white px-4 py-1.5 rounded-lg text-sm font-bold transition-colors">
+                                        Add
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="flex-1 overflow-y-auto custom-scrollbar border border-slate-100 dark:border-slate-700/50 rounded-2xl bg-slate-50/50 dark:bg-slate-900/20 p-4">
+                                <div v-if="(activeSetting==='depts'?departments:docTypes).length === 0" class="h-full flex flex-col items-center justify-center text-slate-400">
+                                    <i class="fa-regular fa-folder-open text-4xl mb-3 opacity-50"></i>
+                                    <p class="text-sm font-medium">No items found. Add one above.</p>
+                                </div>
+                                <div v-else class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <div v-for="(item, i) in (activeSetting==='depts'?departments:docTypes)" :key="i" class="group flex items-center justify-between bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden hover:border-brand-400 dark:hover:border-brand-500 transition-colors shadow-sm">
+                                        <input v-model="(activeSetting==='depts'?departments:docTypes)[i]" class="w-full bg-transparent px-4 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none">
+                                        <button @click="removeItem(activeSetting==='depts'?'dept':'type', i)" class="px-4 py-2.5 text-slate-300 hover:text-red-500 dark:text-slate-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors" title="Delete">
+                                            <i class="fa-solid fa-trash-can"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div v-if="activeSetting==='logs'" class="h-full flex flex-col animate-fade-in">
+                            <div class="flex justify-between items-center mb-6 shrink-0">
+                                <div>
+                                    <h2 class="text-2xl font-bold text-slate-800 dark:text-white tracking-tight">System Logs</h2>
+                                    <p class="text-sm text-slate-500 mt-1">Audit trail of system activities.</p>
+                                </div>
+                                <button @click="clearLogs" class="text-sm text-red-600 hover:text-white bg-red-50 hover:bg-red-600 border border-red-200 hover:border-red-600 font-bold rounded-lg px-4 py-2 transition-colors flex items-center gap-2">
+                                    <i class="fa-solid fa-trash-can"></i> Clear
+                                </button>
+                            </div>
+                            
+                            <div class="flex-1 border border-slate-200 dark:border-slate-700 rounded-2xl overflow-hidden flex flex-col bg-white dark:bg-slate-800">
+                                <div class="overflow-y-auto custom-scrollbar flex-1">
+                                    <table class="w-full text-sm text-left">
+                                        <thead class="bg-slate-50 dark:bg-slate-900/80 text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider text-[10px] sticky top-0 backdrop-blur-md z-10 border-b border-slate-200 dark:border-slate-700">
+                                            <tr>
+                                                <th class="px-6 py-4">Timestamp</th>
+                                                <th class="px-6 py-4">User</th>
+                                                <th class="px-6 py-4">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-slate-100 dark:divide-slate-700/50">
+                                            <tr v-for="(log, i) in logs" :key="i" class="hover:bg-slate-50/50 dark:hover:bg-slate-700/30 transition-colors">
+                                                <td class="px-6 py-3.5 font-mono text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap">{{ log.time }}</td>
+                                                <td class="px-6 py-3.5 font-semibold text-slate-700 dark:text-slate-200 whitespace-nowrap">{{ log.user }}</td>
+                                                <td class="px-6 py-3.5 text-slate-600 dark:text-slate-300">{{ log.action }}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
+                    
                     <div class="p-5 border-t border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-900/80 backdrop-blur-md flex justify-end shrink-0 z-20">
-                        <button @click="saveSettings" class="bg-slate-800 dark:bg-brand-600 hover:bg-black dark:hover:bg-brand-700 text-white px-8 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-slate-500/20 dark:shadow-brand-500/20 hover:-translate-y-0.5 transition-all flex items-center gap-2"><i class="fa-solid fa-check"></i> Save Preferences</button>
+                        <button @click="saveSettings" class="bg-slate-800 dark:bg-brand-600 hover:bg-black dark:hover:bg-brand-700 text-white px-8 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-slate-500/20 dark:shadow-brand-500/20 hover:-translate-y-0.5 transition-all flex items-center gap-2">
+                            <i class="fa-solid fa-check"></i> Save Preferences
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
+      
+       <div v-if="currentPage === 4 && isAdmin" class="max-w-7xl mx-auto animate-slide-up">
+            <div class="glass-card overflow-hidden">
+               <div class="p-6 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-white/50 dark:bg-slate-800/50"><h3 class="font-bold text-base text-slate-800 dark:text-white">System Users</h3><button @click="openAddUser" class="bg-brand-600 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-brand-700 transition shadow-lg hover:-translate-y-0.5"><i class="fa-solid fa-plus mr-1"></i> Add User</button></div>
+               <div class="overflow-x-auto"><table class="w-full text-sm text-left"><thead class="bg-slate-50 dark:bg-slate-900 text-slate-500 dark:text-slate-400 font-bold uppercase border-b border-slate-100 dark:border-slate-700"><tr><th class="px-6 py-4">User</th><th class="px-6 py-4">Role</th><th class="px-6 py-4">Status</th><th class="px-6 py-4 text-right">Action</th></tr></thead><tbody class="divide-y divide-slate-100 dark:divide-slate-700 bg-white dark:bg-slate-800"><tr v-for="u in usersList" :key="u.username" class="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition"><td class="px-6 py-4 font-medium text-slate-700 dark:text-slate-200 flex items-center gap-3"><div class="w-9 h-9 rounded-full bg-slate-200 dark:bg-slate-600 flex items-center justify-center text-xs font-bold">{{u.name.charAt(0)}}</div><div>{{ u.name }} <div class="text-slate-400 font-normal text-xs">@{{u.username}}</div></div></td><td class="px-6 py-4"><span :class="['px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wide', u.role==='Admin'?'bg-indigo-50 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300':u.role==='Manager'?'bg-emerald-50 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300':'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300']">{{ u.role }}</span></td><td class="px-6 py-4"><label class="relative inline-flex items-center cursor-pointer" v-if="u.username!=='admin'"><input type="checkbox" :checked="u.status!=='suspended'" @change="toggleUser(u)" class="sr-only peer"><div class="w-9 h-5 bg-slate-200 dark:bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div></label></td><td class="px-6 py-4 text-right"><button v-if="u.username!=='admin'" @click="editUser(u)" class="text-slate-400 hover:text-brand-600 px-2 transition"><i class="fa-solid fa-pen"></i></button><button v-if="u.username!=='admin'" @click="deleteUser(u.username)" class="text-slate-400 hover:text-red-500 px-2 transition"><i class="fa-solid fa-trash"></i></button></td></tr></tbody></table></div>
+            </div>
+       </div>
 
       </div>
       
@@ -599,6 +804,28 @@
     </div>
   </div>
 
+  <div v-if="showImportModal" class="fixed inset-0 bg-slate-900/50 dark:bg-black/80 z-[100] flex items-center justify-center p-4 backdrop-blur-sm"><div class="bg-white dark:bg-slate-800 w-full max-w-sm rounded-2xl shadow-2xl flex flex-col animate-slide-up"><div class="p-5 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center"><h3 class="font-bold text-slate-800 dark:text-white">Import Data</h3><button @click="showImportModal=false" class="dark:text-slate-400"><i class="fa-solid fa-xmark"></i></button></div><div class="p-6 space-y-4"><button @click="downloadTemplate" class="w-full py-2.5 border border-slate-200 dark:border-slate-600 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center justify-center gap-2"><i class="fa-solid fa-download"></i> Download Excel Template</button><div class="border-2 border-dashed border-orange-200 dark:border-orange-900 bg-orange-50 dark:bg-orange-900/10 rounded-xl p-8 text-center relative hover:bg-orange-100 dark:hover:bg-orange-900/20 transition"><input type="file" @change="handleImportFile" accept=".xlsx" class="absolute inset-0 opacity-0 cursor-pointer"><div class="text-orange-500 text-3xl mb-2"><i class="fa-solid fa-file-excel"></i></div><div class="text-xs font-bold text-slate-600 dark:text-slate-300">Click to Upload Excel</div><div class="text-[10px] text-slate-400 dark:text-slate-500 mt-1">.xlsx files only</div></div></div></div></div>
+  <div v-if="showUserModal" class="fixed inset-0 bg-slate-900/50 dark:bg-black/80 z-[70] flex items-center justify-center p-4 backdrop-blur-sm" @click.stop="showUserModal=false"><div class="glass-card w-full max-w-xs p-6 rounded-2xl animate-slide-up" @click.stop><h3 class="font-bold mb-5 text-sm text-slate-800 dark:text-white">{{ isUserEdit ? 'Edit User' : 'Add User' }}</h3><form @submit.prevent="saveUser" class="space-y-4"><div><label class="label-xs">Username</label><div class="input-compact"><input v-model="userForm.username" class="input-plain" required :readonly="isUserEdit"></div></div><div><label class="label-xs">Password</label><div class="input-compact"><input v-model="userForm.password" type="password" class="input-plain" :required="!isUserEdit"></div></div><div><label class="label-xs">Name</label><div class="input-compact"><input v-model="userForm.name" class="input-plain" required></div></div><div><label class="label-xs">Role</label><div class="input-compact"><select v-model="userForm.role" class="input-plain font-bold dark:bg-slate-700"><option>User</option><option>Manager</option><option>Admin</option></select></div></div><div class="flex justify-end gap-2 pt-4"><button type="button" @click="showUserModal=false" class="px-4 py-2 text-xs font-bold text-slate-400 dark:text-slate-500">Cancel</button><button type="submit" class="bg-brand-600 text-white px-5 py-2 rounded-lg text-xs font-bold shadow hover:bg-brand-700">Save</button></div></form></div></div>
+
+  <div v-if="previewUrl" class="fixed inset-0 bg-slate-900/80 z-[200] flex items-center justify-center p-4 sm:p-8 backdrop-blur-sm animate-fade-in" @click.self="previewUrl=null">
+      <div class="bg-white dark:bg-slate-800 w-full max-w-5xl h-[85vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-slide-up">
+          <div class="h-14 bg-slate-50 dark:bg-slate-900 flex items-center justify-between px-4 sm:px-6 border-b border-slate-200 dark:border-slate-700 shrink-0">
+              <div class="text-slate-700 dark:text-slate-200 font-bold text-sm truncate flex items-center gap-2">
+                  <i class="fa-regular fa-file text-brand-500"></i> Document Preview
+              </div>
+              <div class="flex items-center gap-2">
+                  <button @click="printFromPreview" class="px-3 py-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 transition text-xs font-bold flex items-center gap-2"><i class="fa-solid fa-print"></i> Print</button>
+                  <button @click="handleProxyDownload({fileName: 'Document', fileUrl: previewUrl})" class="px-3 py-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 transition text-xs font-bold flex items-center gap-2"><i class="fa-solid fa-download"></i> Download</button>
+                  <div class="w-px h-6 bg-slate-300 dark:bg-slate-700 mx-1"></div>
+                  <button @click="previewUrl=null" class="w-8 h-8 rounded-lg hover:bg-red-100 hover:text-red-500 text-slate-400 transition flex items-center justify-center"><i class="fa-solid fa-xmark text-lg"></i></button>
+              </div>
+          </div>
+          <div class="flex-1 overflow-hidden bg-slate-100 dark:bg-slate-900 relative">
+              <iframe :src="previewUrl" class="absolute inset-0 w-full h-full border-0"></iframe>
+          </div>
+      </div>
+  </div>
+
   <div v-if="uploadQueue.length > 0" class="fixed bottom-6 right-6 z-[9999] w-80 max-w-[calc(100vw-2rem)] flex flex-col gap-2 transition-all duration-300">
       <div class="glass-card overflow-hidden shadow-2xl border-slate-200 dark:border-slate-700 bg-white/95 dark:bg-slate-800/95 backdrop-blur-xl">
           <div class="px-4 py-3 bg-slate-50 dark:bg-slate-900 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition" @click="isQueueExpanded = !isQueueExpanded">
@@ -606,8 +833,27 @@
           </div>
           <div v-show="isQueueExpanded" class="max-h-60 overflow-y-auto p-2 space-y-2">
               <transition-group name="list">
-                  <div v-for="job in uploadQueue" :key="job.id" class="flex items-center justify-between p-3 rounded-lg border text-xs shadow-sm transition-all duration-300">
-                       <div class="flex items-center gap-3 truncate pr-2"><i v-if="job.status === 'processing'" class="fa-solid fa-circle-notch fa-spin text-blue-500 text-lg"></i><i v-else-if="job.status === 'success'" class="fa-solid fa-circle-check text-emerald-500 text-lg"></i><div class="truncate"><p class="font-bold truncate text-[13px]">{{ job.title }}</p></div></div>
+                  <div v-for="job in uploadQueue" :key="job.id" class="flex items-center justify-between p-3 rounded-lg border text-xs shadow-sm transition-all duration-300"
+                       :class="{
+                           'bg-slate-50 border-slate-200 dark:bg-slate-700/50 dark:border-slate-600 text-slate-500': job.status === 'pending',
+                           'bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800 text-blue-700 dark:text-blue-300': job.status === 'processing',
+                           'bg-emerald-50 border-emerald-200 dark:bg-emerald-900/20 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300': job.status === 'success',
+                           'bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800 text-red-700 dark:text-red-300': job.status === 'error'
+                       }">
+                       <div class="flex items-center gap-3 truncate pr-2">
+                          <i v-if="job.status === 'pending'" class="fa-regular fa-clock text-slate-400 text-lg"></i>
+                          <i v-else-if="job.status === 'processing'" class="fa-solid fa-circle-notch fa-spin text-blue-500 text-lg"></i>
+                          <i v-else-if="job.status === 'success'" class="fa-solid fa-circle-check text-emerald-500 text-lg"></i>
+                          <i v-else-if="job.status === 'error'" class="fa-solid fa-circle-xmark text-red-500 text-lg"></i>
+                          <div class="truncate">
+                              <p class="font-bold truncate text-[13px]" :title="job.title">{{ job.title }}</p>
+                              <p class="text-[10px] opacity-70 mt-0.5 capitalize">{{ job.type === 'upload' ? 'Upload/Edit Document' : job.type }}</p>
+                              <p v-if="job.errorMsg" class="text-[10px] text-red-500 truncate mt-1" :title="job.errorMsg">{{ job.errorMsg }}</p>
+                          </div>
+                      </div>
+                      <button v-if="job.status === 'error' || job.status === 'success'" @click="removeFromQueue(job.id)" class="shrink-0 w-6 h-6 flex items-center justify-center rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-200 dark:hover:bg-slate-600 dark:hover:text-slate-200 ml-2 transition">
+                          <i class="fa-solid fa-xmark"></i>
+                      </button>
                   </div>
               </transition-group>
           </div>
@@ -794,7 +1040,6 @@ createApp({
         if ((currentPage.value === 1 || currentPage.value === 2) && !hasFilters.value) return [];
         let raw = documents.value || []; 
         
-        // Filter พื้นฐาน (ซ่อน Resigned และ Archived)
         if(!showResigned.value) { raw = raw.filter(d => !d.isResigned); }
         raw = raw.filter(d => d.isArchived !== true && d.isArchived !== 'true'); 
 
@@ -896,12 +1141,12 @@ createApp({
             nationalId: doc.nationalId,
             dept: doc.dept,
             docType: doc.docType,
-            isNew: true,     // ถือเป็นการสร้างแถวใหม่ใน Sheet
-            isRenew: true,   // แจ้ง Backend ว่านี่คือการต่ออายุ
-            oldDocId: doc.id // แนบ ID ของใบเดิมไปให้ Backend ทราบ
+            isNew: true,     
+            isRenew: true,   
+            oldDocId: doc.id 
         });
         
-        startDateText.value = formatDateToText(new Date().toISOString().split('T')[0]); // ตั้งวันเริ่มต้นเป็นวันนี้
+        startDateText.value = formatDateToText(new Date().toISOString().split('T')[0]); 
         const parsed = parseTextToDate(startDateText.value);
         if (parsed) form.startDate = parsed;
         
@@ -911,12 +1156,72 @@ createApp({
 
     const removeFromQueue = (id) => { uploadQueue.value = uploadQueue.value.filter(item => item.id !== id); };
     
-    const submitForm = () => { 
-        if(!form.nationalId || form.nationalId.length !== 13 || isNaN(form.nationalId)) { showToast('error', 'Validation Error', 'National ID must be 13 digits.'); return; } 
-        if (!form.empId || form.empId.trim() === '') { form.empId = 'TEMP-' + form.nationalId; }
-        
+    // 🌟 3. ฟังก์ชันแยกสำหรับดำเนินการ Push เข้า Queue 
+    const proceedToSubmitQueue = () => {
         const job = { id: Date.now(), type: 'upload', status: 'pending', data: JSON.parse(JSON.stringify(form)), title: form.firstName + ' ' + form.lastName, errorMsg: '' };
-        uploadQueue.value.push(job); showToast('info', 'Queued', 'Added to upload queue'); showModal.value = false; resetForm(); processQueue();
+        uploadQueue.value.push(job); 
+        showToast('info', 'Queued', 'Added to upload queue'); 
+        showModal.value = false; 
+        resetForm(); 
+        processQueue();
+    };
+
+    // 🌟 4. ฟังก์ชัน Submit Form พร้อม Popup ทางเลือก 3 ทาง (กันข้อมูลซ้ำ)
+    const submitForm = () => { 
+        if(!form.nationalId || form.nationalId.length !== 13 || isNaN(form.nationalId)) { 
+            showToast('error', 'Validation Error', 'National ID must be 13 digits.'); 
+            return; 
+        } 
+        if (!form.empId || form.empId.trim() === '') { 
+            form.empId = 'TEMP-' + form.nationalId; 
+        }
+        
+        // เช็คเอกสารซ้ำซ้อน กรณีที่เป็นการกด "เพิ่มเอกสารใหม่" (ไม่ได้มาจากการกดปุ่ม Renew โดยตรง)
+        if (form.isNew && !form.isRenew) {
+            const duplicate = documents.value.find(d => 
+                d.empId === form.empId && 
+                d.docType === form.docType && 
+                d.isArchived !== true && 
+                d.isArchived !== 'true'
+            );
+
+            if (duplicate) {
+                Swal.fire({
+                    title: 'พบข้อมูลเอกสารซ้ำ!',
+                    html: `มี <b>${form.docType}</b> ของพนักงานคนนี้อยู่แล้วในระบบ<br>คุณต้องการจัดการอย่างไร?`,
+                    icon: 'warning',
+                    showDenyButton: true,
+                    showCancelButton: true,
+                    confirmButtonText: '<i class="fa-solid fa-sync-alt"></i> ต่ออายุ (เก็บประวัติ)',
+                    denyButtonText: '<i class="fa-solid fa-pen"></i> แทนที่ไฟล์เดิม',
+                    cancelButtonText: 'เพิ่มแยกอีก 1 ไฟล์',
+                    confirmButtonColor: '#10b981', // สีเขียว
+                    denyButtonColor: '#f59e0b',    // สีส้ม
+                    cancelButtonColor: '#64748b',  // สีเทา
+                    background: isDark.value ? '#1e293b' : '#fff', 
+                    color: isDark.value ? '#cbd5e1' : '#334155'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // ทางเลือก 1: "ต่ออายุ" -> สร้างแถวใหม่ และ Archive แถวเก่าให้
+                        form.isRenew = true;
+                        form.oldDocId = duplicate.id;
+                        proceedToSubmitQueue();
+                    } else if (result.isDenied) {
+                        // ทางเลือก 2: "แทนที่" -> สลับโหมดเป็นการ Edit และทับ ID เดิม
+                        form.isNew = false;
+                        form.id = duplicate.id;
+                        proceedToSubmitQueue();
+                    } else if (result.dismiss === Swal.DismissReason.cancel) {
+                        // ทางเลือก 3: "เพิ่มแยก" -> ปล่อยให้มันบันทึกเป็น Record ใหม่ไปเลย ไม่ต้องลบของเก่า
+                        proceedToSubmitQueue();
+                    }
+                });
+                return; // หยุดทำงานตรงนี้ รอจนกว่าผู้ใช้จะกดปุ่มใน Popup
+            }
+        }
+
+        // กรณีข้อมูลไม่ซ้ำ หรือผ่านการเช็คแล้ว ให้บันทึกตามปกติ
+        proceedToSubmitQueue();
     };
     
     const deleteDoc = (id) => { let docName = "Document"; const targetId = String(id).trim();
@@ -1120,7 +1425,7 @@ createApp({
     return { 
        componentKey, loading, isLoggedIn, currentUser, isAdmin, loginForm, loginLoading, currentPage, pages, stats, settings, searchQuery, searchTags, filteredEmployees, empSuggestions, form, showModal, departments, docTypes, newItemInput, handleLogin, logout, openModal, editDoc, deleteDoc, submitForm, handleFileUpload, saveSettings, previewDoc, previewUrl, isPreviewPdf, formatDate, toggleResign, usersList, deleteUser, changePage, showUserModal, userForm, saveUser, toggleUser, openAddUser, editUser, isUserEdit, searchSuggestions, selectSuggestion, addSearchTag, removeTag, resetFilters, selectEmployee, addItem, removeItem, activeSetting, activeActionMenu, openActionMenu, closeAllDropdowns, hasFilters, showSuggestions, filterStartDate, filterEndDate, statusBadge, showFilters, logs, currentDate, currentTime, showImportModal, downloadTemplate, handleImportFile, handleProxyDownload, handleProxyPrint, printFromPreview, selectedDepts, selectedStatuses, selectedDocTypes, activeFilterDropdown, toggleFilterDropdown, showResigned, loadData, isDark, toggleTheme, collapsedCards, toggleCardCollapse, canManage, handleBgUpload, clearLogs, getSafeImgUrl, fileUploadInput, isDragging, handleDrop, notifications, showToast, removeNotification, 
        showDashboardTable, dashboardFilter, dashboardDocs, exportDashboardDocs, toggleSelectAll, uploadQueue, isQueueExpanded, isProcessingQueue, removeFromQueue, confirmBulkDelete, showPassword, checkPermission, canPreview, showEmpDropdown, handleEmpInput, addDuration, setEndOfYear, customDuration, customUnit, applyCustomDuration, startDateText, expDateText, sortThaiEng, showExportModal, exportConfig, executeAdvancedExport,
-       itemsPerPage, currentListCurrentPage, totalPages, paginatedEmployees, changeListCurrentPage, renewDoc // 🌟 เพิ่มฟังก์ชัน renew เข้ามา
+       itemsPerPage, currentListCurrentPage, totalPages, paginatedEmployees, changeListCurrentPage, renewDoc
     };
   }
 }).mount('#app');
