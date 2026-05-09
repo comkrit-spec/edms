@@ -1,4 +1,4 @@
-const CACHE_NAME = 'edms-cache-v3'; // หลังจากเปลี่ยนโค้ดนี้ เปลี่ยนชื่อเป็น v3 ครั้งสุดท้าย
+const CACHE_NAME = 'edms-cache-v4'; // หลังจากเปลี่ยนโค้ดนี้ เปลี่ยนชื่อเป็น v3 ครั้งสุดท้าย
 const urlsToCache = [
   './index.html',
   './manifest.json'
