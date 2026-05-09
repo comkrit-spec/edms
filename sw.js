@@ -1,4 +1,4 @@
-const CACHE_NAME = 'edms-cache-v2'; // เพิ่มเลข Version
+const CACHE_NAME = 'edms-cache-v3'; // เพิ่มเลข Version
 const urlsToCache = [
   './index.html',
   './manifest.json'
