@@ -493,245 +493,231 @@
 
        </div>
 
-       <div v-if="currentPage === 3 && isAdmin" class="max-w-6xl mx-auto animate-slide-up pb-10">
-            <div class="flex flex-col md:flex-row gap-8">
-                <div class="w-full md:w-64 shrink-0">
-                    <div class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 py-5 sticky top-24">
-                        <h3 class="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-4 px-5">Configuration</h3>
-                        
-                        <nav class="space-y-1.5 px-3">
-                            
-                            <button @click="activeSetting='branding'" 
-                                    class="relative w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-colors duration-200 overflow-hidden"
-                                    :class="activeSetting==='branding' ? 'bg-brand-50 text-brand-700 dark:bg-brand-500/10 dark:text-brand-400' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white'">
-                                <span v-if="activeSetting==='branding'" class="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-brand-600 dark:bg-brand-400 rounded-r-md"></span>
-                                <i class="fa-solid fa-palette w-5 text-center" :class="activeSetting==='branding'?'text-brand-600 dark:text-brand-400':'text-slate-400'"></i> Branding & UI
-                            </button>
-
-                            <button @click="activeSetting='general'" 
-                                    class="relative w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-colors duration-200 overflow-hidden"
-                                    :class="activeSetting==='general' ? 'bg-brand-50 text-brand-700 dark:bg-brand-500/10 dark:text-brand-400' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white'">
-                                <span v-if="activeSetting==='general'" class="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-brand-600 dark:bg-brand-400 rounded-r-md"></span>
-                                <i class="fa-solid fa-sliders w-5 text-center" :class="activeSetting==='general'?'text-brand-600 dark:text-brand-400':'text-slate-400'"></i> General & Notify
-                            </button>
-
-                            <button @click="activeSetting='depts'" 
-                                    class="relative w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-colors duration-200 overflow-hidden"
-                                    :class="activeSetting==='depts' ? 'bg-brand-50 text-brand-700 dark:bg-brand-500/10 dark:text-brand-400' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white'">
-                                <span v-if="activeSetting==='depts'" class="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-brand-600 dark:bg-brand-400 rounded-r-md"></span>
-                                <i class="fa-solid fa-sitemap w-5 text-center" :class="activeSetting==='depts'?'text-brand-600 dark:text-brand-400':'text-slate-400'"></i> Departments
-                            </button>
-
-                            <button @click="activeSetting='types'" 
-                                    class="relative w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-colors duration-200 overflow-hidden"
-                                    :class="activeSetting==='types' ? 'bg-brand-50 text-brand-700 dark:bg-brand-500/10 dark:text-brand-400' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white'">
-                                <span v-if="activeSetting==='types'" class="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-brand-600 dark:bg-brand-400 rounded-r-md"></span>
-                                <i class="fa-solid fa-file-contract w-5 text-center" :class="activeSetting==='types'?'text-brand-600 dark:text-brand-400':'text-slate-400'"></i> Document Types
-                            </button>
-
-                            <div class="py-2"><div class="h-px bg-slate-100 dark:bg-slate-700 mx-2"></div></div>
-
-                            <button @click="activeSetting='logs'" 
-                                    class="relative w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-colors duration-200 overflow-hidden"
-                                    :class="activeSetting==='logs' ? 'bg-brand-50 text-brand-700 dark:bg-brand-500/10 dark:text-brand-400' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white'">
-                                <span v-if="activeSetting==='logs'" class="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-brand-600 dark:bg-brand-400 rounded-r-md"></span>
-                                <i class="fa-solid fa-clock-rotate-left w-5 text-center" :class="activeSetting==='logs'?'text-brand-600 dark:text-brand-400':'text-slate-400'"></i> System Logs
-                            </button>
-
-                        </nav>
+       <div v-if="currentPage === 3 && isAdmin" class="max-w-[1000px] mx-auto animate-slide-up pb-12">
+            <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl shadow-slate-200/40 dark:shadow-none border border-slate-200 dark:border-slate-700 flex flex-col md:flex-row h-[720px] overflow-hidden">
+                
+                <div class="w-full md:w-64 bg-slate-50/50 dark:bg-slate-900/50 border-r border-slate-200 dark:border-slate-700 flex flex-col shrink-0">
+                    <div class="p-6 pb-4">
+                        <div class="w-10 h-10 bg-brand-600 rounded-xl flex items-center justify-center text-white mb-4 shadow-md shadow-brand-500/20">
+                            <i class="fa-solid fa-sliders text-xl"></i>
+                        </div>
+                        <h2 class="text-xl font-bold text-slate-800 dark:text-white">Settings</h2>
+                        <p class="text-xs text-slate-500 font-medium mt-1">System Preferences</p>
                     </div>
+                    
+                    <nav class="flex-1 px-4 space-y-1.5 overflow-y-auto custom-scrollbar pb-6">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-2 mb-2 mt-2">General</p>
+                        <button @click="activeSetting='branding'" :class="[activeSetting==='branding' ? 'bg-white dark:bg-slate-800 shadow-sm ring-1 ring-slate-200 dark:ring-slate-700 text-brand-600 dark:text-brand-400' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800/50', 'w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all']">
+                            <i class="fa-solid fa-palette w-5 text-center"></i> Branding & UI
+                        </button>
+                        <button @click="activeSetting='general'" :class="[activeSetting==='general' ? 'bg-white dark:bg-slate-800 shadow-sm ring-1 ring-slate-200 dark:ring-slate-700 text-brand-600 dark:text-brand-400' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800/50', 'w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all']">
+                            <i class="fa-regular fa-bell w-5 text-center"></i> Notifications
+                        </button>
+
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-2 mb-2 mt-6">Data Management</p>
+                        <button @click="activeSetting='depts'" :class="[activeSetting==='depts' ? 'bg-white dark:bg-slate-800 shadow-sm ring-1 ring-slate-200 dark:ring-slate-700 text-brand-600 dark:text-brand-400' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800/50', 'w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all']">
+                            <i class="fa-solid fa-sitemap w-5 text-center"></i> Departments
+                        </button>
+                        <button @click="activeSetting='types'" :class="[activeSetting==='types' ? 'bg-white dark:bg-slate-800 shadow-sm ring-1 ring-slate-200 dark:ring-slate-700 text-brand-600 dark:text-brand-400' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800/50', 'w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all']">
+                            <i class="fa-solid fa-file-contract w-5 text-center"></i> Document Types
+                        </button>
+
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-2 mb-2 mt-6">System</p>
+                        <button @click="activeSetting='logs'" :class="[activeSetting==='logs' ? 'bg-white dark:bg-slate-800 shadow-sm ring-1 ring-slate-200 dark:ring-slate-700 text-brand-600 dark:text-brand-400' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800/50', 'w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all']">
+                            <i class="fa-solid fa-clock-rotate-left w-5 text-center"></i> Activity Logs
+                        </button>
+                    </nav>
                 </div>
 
-                <div class="flex-1">
-                    <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 h-[650px] flex flex-col relative overflow-hidden">
+                <div class="flex-1 flex flex-col bg-white dark:bg-slate-800 min-w-0">
+                    
+                    <div class="flex-1 overflow-y-auto custom-scrollbar p-8 md:p-10">
                         
-                        <div class="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-slate-50 to-white dark:from-slate-900/50 dark:to-slate-800 pointer-events-none"></div>
-
-                        <div class="p-8 relative z-10 flex-1 overflow-y-auto custom-scrollbar">
+                        <div v-if="activeSetting==='branding'" class="space-y-8 animate-fade-in">
+                            <div>
+                                <h2 class="text-2xl font-bold text-slate-800 dark:text-white tracking-tight">Branding & UI</h2>
+                                <p class="text-sm text-slate-500 mt-1">Manage the visual style and branding of your workspace.</p>
+                            </div>
                             
-                            <div v-if="activeSetting==='branding'" class="space-y-8 animate-fade-in">
-                                <div class="border-b border-slate-100 dark:border-slate-700 pb-5 mb-6">
-                                    <h2 class="text-2xl font-bold text-slate-800 dark:text-white tracking-tight">Branding & UI</h2>
-                                    <p class="text-sm text-slate-500 mt-1">Customize the visual identity of your Enterprise Document Management System.</p>
-                                </div>
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                            <div class="space-y-6">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div class="col-span-2">
                                         <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">Company Name</label>
-                                        <input v-model="settings.companyName" class="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg text-sm font-semibold text-brand-700 dark:text-brand-400 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-shadow" placeholder="My Enterprise">
+                                        <input v-model="settings.companyName" class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-semibold text-slate-800 dark:text-slate-200 focus:bg-white dark:focus:bg-slate-800 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-all" placeholder="Enter company name">
                                     </div>
                                     <div>
                                         <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">Logo URL</label>
-                                        <input v-model="settings.logoUrl" class="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 outline-none transition-shadow" placeholder="https://...">
+                                        <input v-model="settings.logoUrl" class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-slate-200 focus:bg-white focus:ring-2 focus:ring-brand-500 outline-none transition-all" placeholder="https://...">
                                     </div>
                                     <div>
                                         <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">Logo Height (px)</label>
-                                        <input v-model="settings.logoHeight" type="number" class="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 outline-none transition-shadow">
+                                        <input v-model="settings.logoHeight" type="number" class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-slate-200 focus:bg-white focus:ring-2 focus:ring-brand-500 outline-none transition-all">
                                     </div>
-                                    <div class="col-span-2">
-                                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">Login Background Image</label>
-                                        <div class="flex gap-3">
-                                            <input v-model="settings.loginBgUrl" class="flex-1 px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg text-sm text-slate-500 outline-none" placeholder="https://..." readonly>
-                                            <label class="px-5 flex items-center justify-center bg-white border border-slate-300 dark:border-slate-600 dark:bg-slate-700 rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-600 text-sm font-semibold text-slate-700 dark:text-slate-200 transition-colors shadow-sm">
-                                                <input type="file" @change="handleBgUpload" class="hidden">
-                                                <i class="fa-solid fa-cloud-arrow-up mr-2"></i> Upload
-                                            </label>
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">Login Background Image</label>
+                                    <div class="flex gap-3">
+                                        <input v-model="settings.loginBgUrl" class="flex-1 px-4 py-2.5 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-500 outline-none cursor-not-allowed" placeholder="Upload via button ->" readonly>
+                                        <label class="px-5 flex items-center justify-center bg-white border border-slate-200 dark:border-slate-700 dark:bg-slate-800 rounded-xl cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 text-sm font-bold text-slate-700 dark:text-slate-200 transition-colors shadow-sm">
+                                            <input type="file" @change="handleBgUpload" class="hidden">
+                                            <i class="fa-solid fa-cloud-arrow-up mr-2"></i> Upload
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">System Announcement</label>
+                                    <textarea v-model="settings.systemAnnouncement" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-slate-200 focus:bg-white focus:ring-2 focus:ring-brand-500 outline-none resize-none h-24 transition-all" placeholder="Announcement shown to all users..."></textarea>
+                                </div>
+
+                                <div class="bg-indigo-50/50 dark:bg-indigo-900/10 border border-indigo-100 dark:border-indigo-800/30 rounded-2xl p-5">
+                                    <div class="flex items-center justify-between mb-4">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-8 h-8 rounded-lg bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center"><i class="fa-solid fa-stamp"></i></div>
+                                            <div>
+                                                <h4 class="text-sm font-bold text-slate-800 dark:text-white">PDF Watermark</h4>
+                                                <p class="text-xs text-slate-500">Auto-stamp when downloaded.</p>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div class="col-span-2">
-                                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">System Announcement</label>
-                                        <textarea v-model="settings.systemAnnouncement" class="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 outline-none resize-none h-24 transition-shadow" placeholder="Type announcement message displayed on dashboard..."></textarea>
+                                        <label class="relative inline-flex items-center cursor-pointer">
+                                            <input type="checkbox" v-model="settings.watermarkEnabled" class="sr-only peer">
+                                            <div class="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer dark:bg-slate-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-500"></div>
+                                        </label>
                                     </div>
                                     
-                                    <div class="col-span-2 mt-6 pb-4">
-                                        <div class="bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
-                                            <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 flex items-center gap-3">
-                                                <div class="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 flex items-center justify-center"><i class="fa-solid fa-stamp"></i></div>
-                                                <div>
-                                                    <h3 class="text-sm font-bold text-slate-800 dark:text-white">PDF Watermark Configuration</h3>
-                                                    <p class="text-xs text-slate-500">Auto-flatten and stamp PDFs upon download.</p>
-                                                </div>
-                                            </div>
-                                            <div class="p-5 grid grid-cols-1 md:grid-cols-2 gap-6">
-                                                <div class="col-span-2">
-                                                    <label class="relative inline-flex items-center cursor-pointer">
-                                                        <input type="checkbox" v-model="settings.watermarkEnabled" class="sr-only peer">
-                                                        <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-500"></div>
-                                                        <span class="ml-3 text-sm font-bold text-slate-700 dark:text-slate-300">Enable Watermark Feature</span>
-                                                    </label>
-                                                </div>
-                                                <div v-if="settings.watermarkEnabled" class="col-span-1 animate-fade-in">
-                                                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">Watermark Text <span class="text-slate-400 font-normal">(Use {user} for name)</span></label>
-                                                    <input v-model="settings.watermarkText" class="w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg text-sm font-semibold text-indigo-600 focus:ring-2 focus:ring-indigo-500 outline-none transition-shadow" placeholder="CONFIDENTIAL - {user}">
-                                                </div>
-                                                <div v-if="settings.watermarkEnabled" class="col-span-1 animate-fade-in">
-                                                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">Font Size (px)</label>
-                                                    <input type="number" v-model="settings.watermarkSize" class="w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg text-sm font-semibold text-indigo-600 focus:ring-2 focus:ring-indigo-500 outline-none transition-shadow" placeholder="60">
-                                                </div>
-                                            </div>
+                                    <div v-if="settings.watermarkEnabled" class="grid grid-cols-3 gap-4 pt-4 border-t border-indigo-100 dark:border-indigo-800/30 animate-fade-in">
+                                        <div class="col-span-2">
+                                            <label class="block text-[11px] font-bold text-indigo-900/70 dark:text-indigo-300 mb-1">Watermark Text (Use {user} for name)</label>
+                                            <input v-model="settings.watermarkText" class="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-indigo-200 dark:border-indigo-700/50 rounded-lg text-sm font-semibold text-indigo-700 dark:text-indigo-300 focus:ring-2 focus:ring-indigo-500 outline-none">
+                                        </div>
+                                        <div class="col-span-1">
+                                            <label class="block text-[11px] font-bold text-indigo-900/70 dark:text-indigo-300 mb-1">Size (px)</label>
+                                            <input type="number" v-model="settings.watermarkSize" class="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-indigo-200 dark:border-indigo-700/50 rounded-lg text-sm font-semibold text-indigo-700 dark:text-indigo-300 focus:ring-2 focus:ring-indigo-500 outline-none">
                                         </div>
                                     </div>
                                 </div>
                             </div>
+                        </div>
 
-                            <div v-if="activeSetting==='general'" class="space-y-8 animate-fade-in">
-                                <div class="border-b border-slate-100 dark:border-slate-700 pb-5 mb-6">
-                                    <h2 class="text-2xl font-bold text-slate-800 dark:text-white tracking-tight">General & Notification</h2>
-                                    <p class="text-sm text-slate-500 mt-1">Configure system behavior and automated alert logic.</p>
+                        <div v-if="activeSetting==='general'" class="space-y-8 animate-fade-in">
+                            <div>
+                                <h2 class="text-2xl font-bold text-slate-800 dark:text-white tracking-tight">Notifications & General</h2>
+                                <p class="text-sm text-slate-500 mt-1">Configure automated alerts and basic system behavior.</p>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">Date Format</label>
+                                    <div class="relative">
+                                        <select v-model="settings.dateFormat" class="w-full appearance-none px-4 py-2.5 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium text-slate-800 dark:text-slate-200 focus:bg-white focus:ring-2 focus:ring-brand-500 outline-none cursor-pointer">
+                                            <option value="dd/mm/yyyy">31/01/2024</option>
+                                            <option value="d MMM yyyy">31 Jan 2024</option>
+                                            <option value="d MMM bbbb">31 ม.ค. 2567 (Thai)</option>
+                                        </select>
+                                        <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
+                                    </div>
                                 </div>
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                    <div>
-                                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">Date Format Display</label>
-                                        <div class="relative">
-                                            <select v-model="settings.dateFormat" class="w-full appearance-none px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-brand-500 outline-none cursor-pointer transition-shadow">
-                                                <option value="dd/mm/yyyy">31/01/2024</option>
-                                                <option value="d MMM yyyy">31 Jan 2024</option>
-                                                <option value="d MMM bbbb">31 ม.ค. 2567 (Thai)</option>
-                                            </select>
-                                            <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">Session Timeout (Minutes)</label>
-                                        <input type="number" v-model="settings.sessionTimeout" class="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 outline-none transition-shadow">
-                                    </div>
-                                    
-                                    <div class="col-span-2">
-                                        <div class="bg-amber-50/50 dark:bg-amber-500/5 border border-amber-200/60 dark:border-amber-500/20 rounded-xl overflow-hidden">
-                                            <div class="px-5 py-3 border-b border-amber-200/60 dark:border-amber-500/20 flex items-center gap-2">
-                                                <i class="fa-solid fa-bell text-amber-500"></i>
-                                                <h4 class="font-bold text-amber-800 dark:text-amber-500 text-sm">Expiry Notification Logic</h4>
-                                            </div>
-                                            <div class="p-5 grid grid-cols-1 md:grid-cols-2 gap-6">
-                                                <div>
-                                                    <label class="block text-xs font-bold text-amber-700 dark:text-amber-600 mb-2">Days Before Expiry to Warn</label>
-                                                    <div class="flex items-center gap-3">
-                                                        <input type="number" v-model="settings.notifyDays" class="w-24 px-4 py-2.5 bg-white dark:bg-slate-900 border border-amber-300 dark:border-amber-700/50 rounded-lg text-sm font-bold text-amber-600 focus:ring-2 focus:ring-amber-500 outline-none text-center">
-                                                        <span class="text-sm font-medium text-amber-600 dark:text-amber-500">Days</span>
-                                                    </div>
-                                                </div>
-                                                <div>
-                                                    <label class="block text-xs font-bold text-amber-700 dark:text-amber-600 mb-2">Admin Email (Summary Report)</label>
-                                                    <input v-model="settings.notifyEmail" class="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-amber-300 dark:border-amber-700/50 rounded-lg text-sm focus:ring-2 focus:ring-amber-500 outline-none" placeholder="admin@company.com">
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">Session Timeout (Mins)</label>
+                                    <input type="number" v-model="settings.sessionTimeout" class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-semibold text-slate-800 dark:text-slate-200 focus:bg-white focus:ring-2 focus:ring-brand-500 outline-none">
                                 </div>
                             </div>
 
-                            <div v-if="activeSetting==='depts' || activeSetting==='types'" class="space-y-6 animate-fade-in flex flex-col h-full">
-                                <div class="border-b border-slate-100 dark:border-slate-700 pb-5 mb-2">
-                                    <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
-                                        <div>
-                                            <h2 class="text-2xl font-bold text-slate-800 dark:text-white tracking-tight">{{ activeSetting==='depts'?'Departments':'Document Types' }}</h2>
-                                            <p class="text-sm text-slate-500 mt-1">Manage dropdown lists used in document forms.</p>
-                                        </div>
-                                        
-                                        <div class="flex w-full md:w-auto shadow-sm rounded-lg overflow-hidden border border-slate-300 dark:border-slate-600 focus-within:ring-2 focus-within:ring-brand-500 focus-within:border-brand-500 transition-shadow">
-                                            <input v-model="newItemInput" @keyup.enter="addItem(activeSetting==='depts'?'dept':'type')" class="w-full md:w-56 px-4 py-2.5 bg-white dark:bg-slate-900 text-sm outline-none placeholder:text-slate-400" placeholder="Type name here...">
-                                            <button @click="addItem(activeSetting==='depts'?'dept':'type')" class="bg-brand-600 hover:bg-brand-700 text-white px-5 py-2.5 text-sm font-bold transition-colors flex items-center gap-2">
-                                                Add
-                                            </button>
+                            <div class="bg-amber-50/50 dark:bg-amber-900/10 border border-amber-200/80 dark:border-amber-800/30 rounded-2xl p-6 relative overflow-hidden">
+                                <i class="fa-solid fa-bell absolute -bottom-4 -right-4 text-7xl text-amber-500/10 rotate-12 pointer-events-none"></i>
+                                <h4 class="font-bold text-amber-800 dark:text-amber-500 text-sm mb-5 flex items-center gap-2">
+                                    <i class="fa-solid fa-envelope text-amber-500"></i> Expiry Notifications
+                                </h4>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
+                                    <div>
+                                        <label class="block text-[11px] font-bold text-amber-700/80 dark:text-amber-600 mb-2 uppercase tracking-wide">Days Before Expiry</label>
+                                        <div class="flex items-center gap-3">
+                                            <input type="number" v-model="settings.notifyDays" class="w-24 px-4 py-2 bg-white dark:bg-slate-800 border border-amber-200 dark:border-amber-700/50 rounded-lg text-sm font-bold text-amber-600 focus:ring-2 focus:ring-amber-500 outline-none text-center shadow-sm">
+                                            <span class="text-sm font-semibold text-amber-700 dark:text-amber-500">Days</span>
                                         </div>
                                     </div>
-                                </div>
-
-                                <div class="flex-1 overflow-y-auto pr-2 custom-scrollbar">
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pb-4">
-                                        <div v-for="(item, i) in (activeSetting==='depts'?departments:docTypes)" :key="i" class="group flex justify-between items-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden hover:shadow-md hover:border-brand-300 dark:hover:border-brand-500/50 transition-all duration-200">
-                                            <input v-model="(activeSetting==='depts'?departments:docTypes)[i]" class="w-full bg-transparent px-4 py-3 text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none focus:bg-slate-50 dark:focus:bg-slate-900/50 transition-colors">
-                                            <button @click="removeItem(activeSetting==='depts'?'dept':'type', i)" class="px-4 py-3 text-slate-300 hover:text-red-500 dark:text-slate-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors h-full" title="Remove">
-                                                <i class="fa-solid fa-trash-can"></i>
-                                            </button>
-                                        </div>
+                                    <div>
+                                        <label class="block text-[11px] font-bold text-amber-700/80 dark:text-amber-600 mb-2 uppercase tracking-wide">Admin Email (Report)</label>
+                                        <input v-model="settings.notifyEmail" class="w-full px-4 py-2 bg-white dark:bg-slate-800 border border-amber-200 dark:border-amber-700/50 rounded-lg text-sm font-semibold text-amber-800 dark:text-amber-200 focus:ring-2 focus:ring-amber-500 outline-none shadow-sm" placeholder="admin@company.com">
                                     </div>
                                 </div>
                             </div>
+                        </div>
 
-                            <div v-if="activeSetting==='logs'" class="space-y-6 animate-fade-in flex flex-col h-full">
-                                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-100 dark:border-slate-700 pb-5 mb-2 gap-4">
-                                    <div>
-                                        <h2 class="text-2xl font-bold text-slate-800 dark:text-white tracking-tight">System Logs</h2>
-                                        <p class="text-sm text-slate-500 mt-1">Track user activities and system events.</p>
-                                    </div>
-                                    <button @click="clearLogs" class="text-sm text-red-600 hover:text-white bg-red-50 hover:bg-red-600 border border-red-200 hover:border-red-600 font-bold rounded-lg px-4 py-2 transition-all shadow-sm flex items-center gap-2">
-                                        <i class="fa-solid fa-trash-can"></i> Clear History
+                        <div v-if="activeSetting==='depts' || activeSetting==='types'" class="h-full flex flex-col animate-fade-in">
+                            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-6 gap-4 shrink-0">
+                                <div>
+                                    <h2 class="text-2xl font-bold text-slate-800 dark:text-white tracking-tight">{{ activeSetting==='depts'?'Departments':'Document Types' }}</h2>
+                                    <p class="text-sm text-slate-500 mt-1">Manage dropdown lists used in document forms.</p>
+                                </div>
+                                <div class="flex bg-slate-50 dark:bg-slate-900/50 p-1 rounded-xl border border-slate-200 dark:border-slate-700 w-full sm:w-auto shadow-sm">
+                                    <input v-model="newItemInput" @keyup.enter="addItem(activeSetting==='depts'?'dept':'type')" class="w-full sm:w-48 bg-transparent px-3 py-1.5 text-sm outline-none text-slate-800 dark:text-white placeholder:text-slate-400" placeholder="Add new...">
+                                    <button @click="addItem(activeSetting==='depts'?'dept':'type')" class="bg-brand-600 hover:bg-brand-700 text-white px-4 py-1.5 rounded-lg text-sm font-bold transition-colors">
+                                        Add
                                     </button>
                                 </div>
-                                <div class="overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 flex-1 flex flex-col">
-                                    <div class="overflow-y-auto custom-scrollbar flex-1">
-                                        <table class="w-full text-sm text-left">
-                                            <thead class="bg-slate-50 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider text-[11px] sticky top-0 backdrop-blur-md z-10 border-b border-slate-200 dark:border-slate-700">
-                                                <tr>
-                                                    <th class="px-5 py-3.5">Timestamp</th>
-                                                    <th class="px-5 py-3.5">User</th>
-                                                    <th class="px-5 py-3.5">Action</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody class="divide-y divide-slate-100 dark:divide-slate-700/50 bg-white dark:bg-slate-800">
-                                                <tr v-for="(log, i) in logs" :key="i" class="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
-                                                    <td class="px-5 py-3 font-mono text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap">{{ log.time }}</td>
-                                                    <td class="px-5 py-3 font-semibold text-slate-700 dark:text-slate-200 whitespace-nowrap">{{ log.user }}</td>
-                                                    <td class="px-5 py-3 text-slate-600 dark:text-slate-300">{{ log.action }}</td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
+                            </div>
+
+                            <div class="flex-1 overflow-y-auto custom-scrollbar border border-slate-100 dark:border-slate-700/50 rounded-2xl bg-slate-50/50 dark:bg-slate-900/20 p-4">
+                                <div v-if="(activeSetting==='depts'?departments:docTypes).length === 0" class="h-full flex flex-col items-center justify-center text-slate-400">
+                                    <i class="fa-regular fa-folder-open text-4xl mb-3 opacity-50"></i>
+                                    <p class="text-sm font-medium">No items found. Add one above.</p>
+                                </div>
+                                <div v-else class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <div v-for="(item, i) in (activeSetting==='depts'?departments:docTypes)" :key="i" class="group flex items-center justify-between bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden hover:border-brand-400 dark:hover:border-brand-500 transition-colors shadow-sm">
+                                        <input v-model="(activeSetting==='depts'?departments:docTypes)[i]" class="w-full bg-transparent px-4 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none">
+                                        <button @click="removeItem(activeSetting==='depts'?'dept':'type', i)" class="px-4 py-2.5 text-slate-300 hover:text-red-500 dark:text-slate-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors" title="Delete">
+                                            <i class="fa-solid fa-trash-can"></i>
+                                        </button>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        
-                        <div class="p-6 border-t border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/30 flex justify-end shrink-0 z-20">
-                            <button @click="saveSettings" class="bg-brand-600 hover:bg-brand-700 text-white px-8 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-brand-500/30 hover:shadow-brand-500/50 hover:-translate-y-0.5 transition-all flex items-center gap-2">
-                                <i class="fa-solid fa-save"></i> Save Changes
-                            </button>
+
+                        <div v-if="activeSetting==='logs'" class="h-full flex flex-col animate-fade-in">
+                            <div class="flex justify-between items-center mb-6 shrink-0">
+                                <div>
+                                    <h2 class="text-2xl font-bold text-slate-800 dark:text-white tracking-tight">System Logs</h2>
+                                    <p class="text-sm text-slate-500 mt-1">Audit trail of system activities.</p>
+                                </div>
+                                <button @click="clearLogs" class="text-sm text-red-600 hover:text-white bg-red-50 hover:bg-red-600 border border-red-200 hover:border-red-600 font-bold rounded-lg px-4 py-2 transition-colors flex items-center gap-2">
+                                    <i class="fa-solid fa-trash-can"></i> Clear
+                                </button>
+                            </div>
+                            
+                            <div class="flex-1 border border-slate-200 dark:border-slate-700 rounded-2xl overflow-hidden flex flex-col bg-white dark:bg-slate-800">
+                                <div class="overflow-y-auto custom-scrollbar flex-1">
+                                    <table class="w-full text-sm text-left">
+                                        <thead class="bg-slate-50 dark:bg-slate-900/80 text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider text-[10px] sticky top-0 backdrop-blur-md z-10 border-b border-slate-200 dark:border-slate-700">
+                                            <tr>
+                                                <th class="px-6 py-4">Timestamp</th>
+                                                <th class="px-6 py-4">User</th>
+                                                <th class="px-6 py-4">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-slate-100 dark:divide-slate-700/50">
+                                            <tr v-for="(log, i) in logs" :key="i" class="hover:bg-slate-50/50 dark:hover:bg-slate-700/30 transition-colors">
+                                                <td class="px-6 py-3.5 font-mono text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap">{{ log.time }}</td>
+                                                <td class="px-6 py-3.5 font-semibold text-slate-700 dark:text-slate-200 whitespace-nowrap">{{ log.user }}</td>
+                                                <td class="px-6 py-3.5 text-slate-600 dark:text-slate-300">{{ log.action }}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
                         </div>
 
+                    </div>
+                    
+                    <div class="p-5 border-t border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-900/80 backdrop-blur-md flex justify-end shrink-0 z-20">
+                        <button @click="saveSettings" class="bg-slate-800 dark:bg-brand-600 hover:bg-black dark:hover:bg-brand-700 text-white px-8 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-slate-500/20 dark:shadow-brand-500/20 hover:-translate-y-0.5 transition-all flex items-center gap-2">
+                            <i class="fa-solid fa-check"></i> Save Preferences
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
-
        <div v-if="currentPage === 4 && isAdmin" class="max-w-7xl mx-auto animate-slide-up">
             <div class="glass-card overflow-hidden">
                <div class="p-6 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-white/50 dark:bg-slate-800/50"><h3 class="font-bold text-base text-slate-800 dark:text-white">System Users</h3><button @click="openAddUser" class="bg-brand-600 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-brand-700 transition shadow-lg hover:-translate-y-0.5"><i class="fa-solid fa-plus mr-1"></i> Add User</button></div>
