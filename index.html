@@ -493,10 +493,9 @@
 
        </div>
 
-       <div v-if="currentPage === 3 && isAdmin" class="max-w-[1000px] mx-auto animate-slide-up pb-12">
-            <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl shadow-slate-200/40 dark:shadow-none border border-slate-200 dark:border-slate-700 flex flex-col md:flex-row h-[720px] overflow-hidden">
-                
-                <div class="w-full md:w-64 bg-slate-50/50 dark:bg-slate-900/50 border-r border-slate-200 dark:border-slate-700 flex flex-col shrink-0">
+       <div v-if="currentPage === 3 && isAdmin" class="w-full max-w-[1000px] mx-auto animate-slide-up pb-12">
+            <div class="w-full bg-white dark:bg-slate-800 rounded-2xl shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-200 dark:border-slate-700 flex flex-col md:flex-row h-[calc(100vh-6rem)] min-h-[550px] md:h-[720px] overflow-hidden"> 
+                <div class="w-full md:w-64 bg-slate-50/50 dark:bg-slate-900/50 border-b md:border-b-0 md:border-r border-slate-200 dark:border-slate-700 flex flex-col shrink-0">
                     <div class="p-6 pb-4">
                         <div class="w-10 h-10 bg-brand-600 rounded-xl flex items-center justify-center text-white mb-4 shadow-md shadow-brand-500/20">
                             <i class="fa-solid fa-sliders text-xl"></i>
@@ -718,6 +717,7 @@
                 </div>
             </div>
         </div>
+      
        <div v-if="currentPage === 4 && isAdmin" class="max-w-7xl mx-auto animate-slide-up">
             <div class="glass-card overflow-hidden">
                <div class="p-6 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-white/50 dark:bg-slate-800/50"><h3 class="font-bold text-base text-slate-800 dark:text-white">System Users</h3><button @click="openAddUser" class="bg-brand-600 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-brand-700 transition shadow-lg hover:-translate-y-0.5"><i class="fa-solid fa-plus mr-1"></i> Add User</button></div>
