@@ -496,25 +496,48 @@
        <div v-if="currentPage === 3 && isAdmin" class="max-w-6xl mx-auto animate-slide-up pb-10">
             <div class="flex flex-col md:flex-row gap-8">
                 <div class="w-full md:w-64 shrink-0">
-                    <div class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-5 sticky top-24">
-                        <h3 class="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-4 px-3">Configuration</h3>
-                        <nav class="space-y-1.5">
-                            <button @click="activeSetting='branding'" :class="['w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200', activeSetting==='branding' ? 'bg-brand-50 text-brand-700 dark:bg-brand-500/10 dark:text-brand-400 shadow-sm ring-1 ring-brand-500/20' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white']">
-                                <i class="fa-solid fa-palette w-5 text-center" :class="activeSetting==='branding'?'text-brand-500':'text-slate-400'"></i> Branding & UI
+                    <div class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 py-5 sticky top-24">
+                        <h3 class="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-4 px-5">Configuration</h3>
+                        
+                        <nav class="space-y-1.5 px-3">
+                            
+                            <button @click="activeSetting='branding'" 
+                                    class="relative w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-colors duration-200 overflow-hidden"
+                                    :class="activeSetting==='branding' ? 'bg-brand-50 text-brand-700 dark:bg-brand-500/10 dark:text-brand-400' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white'">
+                                <span v-if="activeSetting==='branding'" class="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-brand-600 dark:bg-brand-400 rounded-r-md"></span>
+                                <i class="fa-solid fa-palette w-5 text-center" :class="activeSetting==='branding'?'text-brand-600 dark:text-brand-400':'text-slate-400'"></i> Branding & UI
                             </button>
-                            <button @click="activeSetting='general'" :class="['w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200', activeSetting==='general' ? 'bg-brand-50 text-brand-700 dark:bg-brand-500/10 dark:text-brand-400 shadow-sm ring-1 ring-brand-500/20' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white']">
-                                <i class="fa-solid fa-sliders w-5 text-center" :class="activeSetting==='general'?'text-brand-500':'text-slate-400'"></i> General & Notify
+
+                            <button @click="activeSetting='general'" 
+                                    class="relative w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-colors duration-200 overflow-hidden"
+                                    :class="activeSetting==='general' ? 'bg-brand-50 text-brand-700 dark:bg-brand-500/10 dark:text-brand-400' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white'">
+                                <span v-if="activeSetting==='general'" class="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-brand-600 dark:bg-brand-400 rounded-r-md"></span>
+                                <i class="fa-solid fa-sliders w-5 text-center" :class="activeSetting==='general'?'text-brand-600 dark:text-brand-400':'text-slate-400'"></i> General & Notify
                             </button>
-                            <button @click="activeSetting='depts'" :class="['w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200', activeSetting==='depts' ? 'bg-brand-50 text-brand-700 dark:bg-brand-500/10 dark:text-brand-400 shadow-sm ring-1 ring-brand-500/20' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white']">
-                                <i class="fa-solid fa-sitemap w-5 text-center" :class="activeSetting==='depts'?'text-brand-500':'text-slate-400'"></i> Departments
+
+                            <button @click="activeSetting='depts'" 
+                                    class="relative w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-colors duration-200 overflow-hidden"
+                                    :class="activeSetting==='depts' ? 'bg-brand-50 text-brand-700 dark:bg-brand-500/10 dark:text-brand-400' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white'">
+                                <span v-if="activeSetting==='depts'" class="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-brand-600 dark:bg-brand-400 rounded-r-md"></span>
+                                <i class="fa-solid fa-sitemap w-5 text-center" :class="activeSetting==='depts'?'text-brand-600 dark:text-brand-400':'text-slate-400'"></i> Departments
                             </button>
-                            <button @click="activeSetting='types'" :class="['w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200', activeSetting==='types' ? 'bg-brand-50 text-brand-700 dark:bg-brand-500/10 dark:text-brand-400 shadow-sm ring-1 ring-brand-500/20' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white']">
-                                <i class="fa-solid fa-file-contract w-5 text-center" :class="activeSetting==='types'?'text-brand-500':'text-slate-400'"></i> Document Types
+
+                            <button @click="activeSetting='types'" 
+                                    class="relative w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-colors duration-200 overflow-hidden"
+                                    :class="activeSetting==='types' ? 'bg-brand-50 text-brand-700 dark:bg-brand-500/10 dark:text-brand-400' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white'">
+                                <span v-if="activeSetting==='types'" class="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-brand-600 dark:bg-brand-400 rounded-r-md"></span>
+                                <i class="fa-solid fa-file-contract w-5 text-center" :class="activeSetting==='types'?'text-brand-600 dark:text-brand-400':'text-slate-400'"></i> Document Types
                             </button>
-                            <div class="py-2"><div class="h-px bg-slate-100 dark:bg-slate-700"></div></div>
-                            <button @click="activeSetting='logs'" :class="['w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200', activeSetting==='logs' ? 'bg-brand-50 text-brand-700 dark:bg-brand-500/10 dark:text-brand-400 shadow-sm ring-1 ring-brand-500/20' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white']">
-                                <i class="fa-solid fa-clock-rotate-left w-5 text-center" :class="activeSetting==='logs'?'text-brand-500':'text-slate-400'"></i> System Logs
+
+                            <div class="py-2"><div class="h-px bg-slate-100 dark:bg-slate-700 mx-2"></div></div>
+
+                            <button @click="activeSetting='logs'" 
+                                    class="relative w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-colors duration-200 overflow-hidden"
+                                    :class="activeSetting==='logs' ? 'bg-brand-50 text-brand-700 dark:bg-brand-500/10 dark:text-brand-400' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white'">
+                                <span v-if="activeSetting==='logs'" class="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-brand-600 dark:bg-brand-400 rounded-r-md"></span>
+                                <i class="fa-solid fa-clock-rotate-left w-5 text-center" :class="activeSetting==='logs'?'text-brand-600 dark:text-brand-400':'text-slate-400'"></i> System Logs
                             </button>
+
                         </nav>
                     </div>
                 </div>
