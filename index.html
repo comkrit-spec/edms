@@ -742,6 +742,58 @@
     </main>
   </div>
 
+  <div v-if="showExportModal" class="fixed inset-0 bg-slate-900/50 dark:bg-black/80 z-[100] flex items-center justify-center p-4 backdrop-blur-sm transition-opacity duration-300">
+      <div class="bg-white dark:bg-slate-800 w-full max-w-md rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-slide-up">
+          <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-900/50">
+              <h3 class="font-bold text-slate-800 dark:text-white flex items-center gap-2"><i class="fa-solid fa-file-export text-emerald-500"></i> Export to Excel</h3>
+              <button @click="showExportModal = false" class="text-slate-400 hover:text-red-500 transition"><i class="fa-solid fa-xmark text-lg"></i></button>
+          </div>
+          <div class="p-6 space-y-5">
+              <div>
+                  <label class="label-xs mb-2">ขอบเขตข้อมูล (Data Scope)</label>
+                  <div class="flex gap-4">
+                       <label class="flex items-center gap-2 cursor-pointer text-sm text-slate-700 dark:text-slate-200">
+                          <input type="radio" v-model="exportConfig.scope" value="filtered" class="accent-emerald-500 w-4 h-4"> ข้อมูลที่ค้นหา ({{ filteredEmployees.length }} รายการ)
+                      </label>
+                      <label class="flex items-center gap-2 cursor-pointer text-sm text-slate-700 dark:text-slate-200">
+                          <input type="radio" v-model="exportConfig.scope" value="all" class="accent-emerald-500 w-4 h-4"> ข้อมูลทั้งหมด
+                      </label>
+                  </div>
+               </div>
+              <div>
+                  <label class="label-xs mb-2">รูปแบบรายงาน (Format)</label>
+                  <div class="flex flex-col gap-2">
+                      <label class="flex items-center gap-2 cursor-pointer text-sm text-slate-700 dark:text-slate-200">
+                           <input type="radio" v-model="exportConfig.format" value="standard" class="accent-emerald-500 w-4 h-4"> แบบรายการปกติ (Standard List)
+                      </label>
+                      <label class="flex items-center gap-2 cursor-pointer text-sm text-slate-700 dark:text-slate-200">
+                          <input type="radio" v-model="exportConfig.format" value="matrix" class="accent-emerald-500 w-4 h-4"> แบบสรุปรายบุคคล (Matrix / Pivot)
+                      </label>
+                  </div>
+              </div>
+              <div v-if="exportConfig.format === 'standard'">
+                  <label class="label-xs mb-2">เลือกคอลัมน์ (Columns)</label>
+                  <div class="grid grid-cols-2 gap-3 bg-slate-50 dark:bg-slate-900/30 p-4 rounded-xl border border-slate-100 dark:border-slate-700 max-h-48 overflow-y-auto">
+                      <label v-for="(val, key) in exportConfig.columns" :key="key" class="flex items-center gap-2 cursor-pointer text-xs font-medium text-slate-600 dark:text-slate-300">
+                          <input type="checkbox" v-model="exportConfig.columns[key].selected" class="rounded border-slate-300 text-emerald-500 focus:ring-emerald-500 w-4 h-4">
+                          {{ exportConfig.columns[key].label }}
+                      </label>
+                  </div>
+              </div>
+              <div v-else class="bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 p-3 rounded-xl text-xs flex items-start gap-2 border border-blue-100 dark:border-blue-800">
+                  <i class="fa-solid fa-circle-info mt-0.5"></i>
+                  <p>รายงานแบบสรุปจะกางประเภทเอกสารทั้งหมดเป็นคอลัมน์ และแสดง "วันหมดอายุ" ของเอกสารแต่ละประเภท (รูปแบบรายงานตรงตามภาพตัวอย่าง)</p>
+              </div>
+          </div>
+          <div class="p-4 border-t border-slate-100 dark:border-slate-700 flex justify-end gap-3 bg-slate-50 dark:bg-slate-900/50">
+               <button @click="showExportModal = false" class="px-5 py-2 rounded-lg text-xs font-bold text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 transition">ยกเลิก</button>
+              <button @click="executeAdvancedExport" class="bg-emerald-600 text-white px-6 py-2 rounded-lg text-xs font-bold shadow-lg shadow-emerald-500/30 hover:bg-emerald-700 hover:-translate-y-0.5 transition flex items-center gap-2">
+                  <i class="fa-solid fa-download"></i> ดาวน์โหลดไฟล์
+              </button>
+          </div>
+      </div>
+  </div>
+
   <div v-if="showModal" class="fixed inset-0 bg-slate-900/70 dark:bg-black/80 z-[100] flex items-center justify-center p-4 backdrop-blur-sm transition-opacity duration-300">
       <div class="bg-white dark:bg-slate-800 w-full max-w-5xl rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-slide-up" style="max-height: 90vh;">
           <div class="px-6 py-3 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-white dark:bg-slate-800 shrink-0">
@@ -786,13 +838,30 @@
                           <div class="flex flex-wrap items-end gap-4">
                                <div class="w-40 shrink-0"><label class="label-xs text-orange-600 dark:text-orange-400">วันหมดอายุ (Expire)</label><div class="input-compact border-orange-200 bg-white dark:bg-slate-700 flex items-center relative group"><input type="text" v-model="expDateText" placeholder="วว/ดด/ปปปป" maxlength="10" class="input-plain font-bold text-orange-600 z-10 bg-transparent w-full"><div class="absolute right-0 top-0 h-full w-8 flex items-center justify-center pointer-events-none"><i class="fa-regular fa-calendar text-orange-400"></i></div><input type="date" v-model="form.expDate" class="absolute inset-0 opacity-0 w-full h-full cursor-pointer z-20" tabindex="-1" style="width: 30px; left: auto; right: 0;"></div></div>
                               <div class="flex flex-wrap gap-2 mb-1"><button type="button" @click="addDuration(3,'month')" class="px-2 py-1 bg-white border border-orange-200 text-orange-600 rounded text-[10px] font-bold hover:bg-orange-100 transition shadow-sm">+3ด.</button><button type="button" @click="addDuration(6,'month')" class="px-2 py-1 bg-white border border-orange-200 text-orange-600 rounded text-[10px] font-bold hover:bg-orange-100 transition shadow-sm">+6ด.</button><button type="button" @click="addDuration(1,'year')" class="px-2 py-1 bg-white border border-orange-200 text-orange-600 rounded text-[10px] font-bold hover:bg-orange-100 transition shadow-sm">+1ปี</button><button type="button" @click="setEndOfYear()" class="px-2 py-1 bg-white border border-orange-200 text-orange-600 rounded text-[10px] font-bold hover:bg-orange-100 transition shadow-sm">สิ้นปี</button></div>
+                               <div class="flex items-center gap-1.5 bg-white dark:bg-slate-800 p-1 rounded-lg border border-orange-200 dark:border-orange-700/50 shadow-sm ml-auto">
+                                  <span class="text-[10px] text-slate-400 font-bold px-1 hidden sm:inline">กำหนดเอง:</span>
+                                  <input type="number" v-model="customDuration" class="w-10 h-7 text-xs text-center border border-slate-200 dark:border-slate-600 rounded focus:border-orange-500 outline-none bg-transparent dark:text-white" placeholder="1">
+                                  <select v-model="customUnit" class="h-7 text-[10px] border border-slate-200 dark:border-slate-600 rounded bg-slate-50 dark:bg-slate-700 dark:text-slate-200 outline-none cursor-pointer">
+                                      <option value="day">วัน</option>
+                                      <option value="month">เดือน</option>
+                                      <option value="year">ปี</option>
+                                   </select>
+                                  <button type="button" @click="applyCustomDuration" class="h-7 w-7 flex items-center justify-center bg-orange-500 text-white rounded hover:bg-orange-600 transition shadow-sm" title="คำนวณวันหมดอายุ">
+                                      <i class="fa-solid fa-calculator text-[10px]"></i>
+                                  </button>
+                              </div>
                            </div>
                       </div>
                       <div class="flex-1 grid grid-cols-12 gap-4 min-h-0">
                           <div class="col-span-5 flex flex-col"><label class="label-xs">หมายเหตุ (Remark)</label><textarea v-model="form.remark" class="flex-1 w-full border border-slate-200 dark:border-slate-600 rounded-lg p-2 text-xs resize-none bg-slate-50 dark:bg-slate-700/50 focus:ring-2 focus:ring-brand-500 outline-none" placeholder="รายละเอียดเพิ่มเติม..."></textarea></div>
-                          <div class="col-span-7 flex flex-col"><label class="label-xs">ไฟล์เอกสาร (Upload)</label><div class="flex-1 border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700/20 relative hover:border-brand-400 hover:bg-brand-50 dark:hover:bg-slate-700/50 transition group flex flex-col items-center justify-center text-center cursor-pointer overflow-hidden" @dragover.prevent="isDragging=true" @dragleave.prevent="isDragging=false" @drop.prevent="handleDrop">
-                            <input type="file" ref="fileUploadInput" @change="handleFileUpload" accept=".pdf, .jpg, .jpeg, .png, .doc, .docx, .xls, .xlsx" class="absolute inset-0 opacity-0 cursor-pointer z-10">
-                            <div v-if="!form.fileName" class="pointer-events-none p-4"><i class="fa-solid fa-cloud-arrow-up text-2xl text-slate-300 group-hover:text-brand-500 transition mb-2"></i><p class="text-xs font-bold text-slate-500">ลากไฟล์มาวาง หรือ คลิกเพื่อเลือก</p></div><div v-else class="w-full h-full bg-emerald-50 dark:bg-emerald-900/20 flex flex-col items-center justify-center p-4 relative"><button type="button" @click.stop="form.fileName=''; form.fileData=null" class="absolute top-2 right-2 text-slate-400 hover:text-red-500 z-20"><i class="fa-solid fa-xmark"></i></button><i class="fa-solid fa-file-circle-check text-3xl text-emerald-500 mb-2"></i><p class="text-xs font-bold text-slate-700 dark:text-slate-200 truncate w-full px-4">{{ form.fileName }}</p></div></div></div>
+                          <div class="col-span-7 flex flex-col">
+                              <label class="label-xs">ไฟล์เอกสาร (Upload)</label>
+                              <div class="flex-1 border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700/20 relative hover:border-brand-400 hover:bg-brand-50 dark:hover:bg-slate-700/50 transition group flex flex-col items-center justify-center text-center cursor-pointer overflow-hidden" @dragover.prevent="isDragging=true" @dragleave.prevent="isDragging=false" @drop.prevent="handleDrop">
+                                  <input type="file" ref="fileUploadInput" @change="handleFileUpload" class="absolute inset-0 opacity-0 cursor-pointer z-10">
+                                  <div v-if="!form.fileName" class="pointer-events-none p-4"><i class="fa-solid fa-cloud-arrow-up text-2xl text-slate-300 group-hover:text-brand-500 transition mb-2"></i><p class="text-xs font-bold text-slate-500">ลากไฟล์มาวาง หรือ คลิกเพื่อเลือก</p></div>
+                                  <div v-else class="w-full h-full bg-emerald-50 dark:bg-emerald-900/20 flex flex-col items-center justify-center p-4 relative"><button type="button" @click.stop="form.fileName=''; form.fileData=null" class="absolute top-2 right-2 text-slate-400 hover:text-red-500 z-20"><i class="fa-solid fa-xmark"></i></button><i class="fa-solid fa-file-circle-check text-3xl text-emerald-500 mb-2"></i><p class="text-xs font-bold text-slate-700 dark:text-slate-200 truncate w-full px-4">{{ form.fileName }}</p></div>
+                              </div>
+                          </div>
                       </div>
                   </div>
               </div>
@@ -1037,7 +1106,6 @@ createApp({
     const setEndOfYear = () => { lastUsedDuration = null; if (!form.startDate) { const today = new Date(); form.startDate = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0'); } let y = form.startDate.split('-')[0]; form.expDate = y + '-12-31'; };
     const applyCustomDuration = () => { const val = parseInt(customDuration.value) || 0; if(val === 0) return; addDuration(val, customUnit.value); };
 
-    // 🌟 1. ดัดแปลงการ Filter: ยกเว้นเอกสารที่ถูก Archive แล้ว
     const filteredEmployees = computed(() => {
         if ((currentPage.value === 1 || currentPage.value === 2) && !hasFilters.value) return [];
         let raw = documents.value || []; 
@@ -1133,7 +1201,6 @@ createApp({
     const openModal = () => { resetForm(); showModal.value = true; };
     const editDoc = (d) => { Object.assign(form, d); form.isNew = false; form.isRenew = false; lastUsedDuration = null; if(d.startDate) { form.startDate = d.startDate; startDateText.value = formatDateToText(form.startDate); } if(d.expDate) { form.expDate = d.expDate; expDateText.value = formatDateToText(form.expDate); } showModal.value = true; };
     
-    // 🌟 2. ฟังก์ชันต่ออายุเอกสาร (Renew)
     const renewDoc = (doc) => {
         resetForm();
         Object.assign(form, {
@@ -1158,7 +1225,7 @@ createApp({
 
     const removeFromQueue = (id) => { uploadQueue.value = uploadQueue.value.filter(item => item.id !== id); };
     
-    // 🌟 3. ฟังก์ชันแยกสำหรับดำเนินการ Push เข้า Queue 
+    // 🌟 ดันฟอร์มเข้า Queue (เพื่อให้เรียกซ้ำได้)
     const proceedToSubmitQueue = () => {
         const job = { id: Date.now(), type: 'upload', status: 'pending', data: JSON.parse(JSON.stringify(form)), title: form.firstName + ' ' + form.lastName, errorMsg: '' };
         uploadQueue.value.push(job); 
@@ -1168,7 +1235,7 @@ createApp({
         processQueue();
     };
 
-    // 🌟 4. ฟังก์ชัน Submit Form พร้อม Popup ทางเลือก 3 ทาง (กันข้อมูลซ้ำ)
+    // 🌟 บันทึกฟอร์ม และมี Popup ตรวจจับข้อมูลซ้ำซ้อน
     const submitForm = () => { 
         if(!form.nationalId || form.nationalId.length !== 13 || isNaN(form.nationalId)) { 
             showToast('error', 'Validation Error', 'National ID must be 13 digits.'); 
@@ -1178,7 +1245,6 @@ createApp({
             form.empId = 'TEMP-' + form.nationalId; 
         }
         
-        // เช็คเอกสารซ้ำซ้อน กรณีที่เป็นการกด "เพิ่มเอกสารใหม่" (ไม่ได้มาจากการกดปุ่ม Renew โดยตรง)
         if (form.isNew && !form.isRenew) {
             const duplicate = documents.value.find(d => 
                 d.empId === form.empId && 
@@ -1197,32 +1263,28 @@ createApp({
                     confirmButtonText: '<i class="fa-solid fa-sync-alt"></i> ต่ออายุ (เก็บประวัติ)',
                     denyButtonText: '<i class="fa-solid fa-pen"></i> แทนที่ไฟล์เดิม',
                     cancelButtonText: 'เพิ่มแยกอีก 1 ไฟล์',
-                    confirmButtonColor: '#10b981', // สีเขียว
-                    denyButtonColor: '#f59e0b',    // สีส้ม
-                    cancelButtonColor: '#64748b',  // สีเทา
+                    confirmButtonColor: '#10b981', 
+                    denyButtonColor: '#f59e0b',    
+                    cancelButtonColor: '#64748b',  
                     background: isDark.value ? '#1e293b' : '#fff', 
                     color: isDark.value ? '#cbd5e1' : '#334155'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        // ทางเลือก 1: "ต่ออายุ" -> สร้างแถวใหม่ และ Archive แถวเก่าให้
                         form.isRenew = true;
                         form.oldDocId = duplicate.id;
                         proceedToSubmitQueue();
                     } else if (result.isDenied) {
-                        // ทางเลือก 2: "แทนที่" -> สลับโหมดเป็นการ Edit และทับ ID เดิม
                         form.isNew = false;
                         form.id = duplicate.id;
                         proceedToSubmitQueue();
                     } else if (result.dismiss === Swal.DismissReason.cancel) {
-                        // ทางเลือก 3: "เพิ่มแยก" -> ปล่อยให้มันบันทึกเป็น Record ใหม่ไปเลย ไม่ต้องลบของเก่า
                         proceedToSubmitQueue();
                     }
                 });
-                return; // หยุดทำงานตรงนี้ รอจนกว่าผู้ใช้จะกดปุ่มใน Popup
+                return; 
             }
         }
 
-        // กรณีข้อมูลไม่ซ้ำ หรือผ่านการเช็คแล้ว ให้บันทึกตามปกติ
         proceedToSubmitQueue();
     };
     
@@ -1378,7 +1440,6 @@ createApp({
     const executeAdvancedExport = () => { let sourceData = []; if (exportConfig.scope === 'filtered') { sourceData = filteredEmployees.value; } else { const allDocsGrp = {}; documents.value.forEach(d => { if(!allDocsGrp[d.empId]) allDocsGrp[d.empId] = {empId: d.empId, name: d.firstName+' '+d.lastName, dept: d.dept, nationalId: d.nationalId, docs: []}; allDocsGrp[d.empId].docs.push(d); }); sourceData = Object.values(allDocsGrp); } if (sourceData.length === 0) { showToast('warning', 'ไม่มีข้อมูลสำหรับ Export'); return; } let exportData = []; if (exportConfig.format === 'matrix') { const docTypesSet = new Set(); sourceData.forEach(emp => { emp.docs.forEach(doc => docTypesSet.add(doc.docType)); }); const dynamicHeaders = Array.from(docTypesSet).sort(); exportData = sourceData.map(emp => { let row = { 'Emp ID': emp.empId, 'Name': emp.name, 'Department': emp.dept }; dynamicHeaders.forEach(header => { row[header] = ''; }); emp.docs.forEach(doc => { let dateStr = formatDate(doc.expDate); if (row[doc.docType] !== '') { row[doc.docType] += ', ' + dateStr; } else { row[doc.docType] = dateStr; } }); return row; }); } else { exportData = sourceData.flatMap(emp => emp.docs.map(doc => { let row = {}; if (exportConfig.columns.empId.selected) row['Emp ID'] = emp.empId; if (exportConfig.columns.nationalId.selected) row['National ID'] = emp.nationalId || '-'; if (exportConfig.columns.name.selected) row['Name'] = emp.name; if (exportConfig.columns.dept.selected) row['Department'] = emp.dept; if (exportConfig.columns.docType.selected) row['Doc Type'] = doc.docType; if (exportConfig.columns.startDate.selected) row['Start Date'] = formatDate(doc.startDate); if (exportConfig.columns.expDate.selected) row['Expire Date'] = formatDate(doc.expDate); if (exportConfig.columns.daysLeft.selected) row['Days Left'] = doc.daysLeft; if (exportConfig.columns.status.selected) row['Status'] = doc.status; if (exportConfig.columns.remark.selected) row['Remark'] = doc.remark || ''; return row; })); } const ws = XLSX.utils.json_to_sheet(exportData); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, exportConfig.format === 'matrix' ? "Matrix_Report" : "Document_Export"); const timestamp = new Date().toISOString().split('T')[0]; const fileName = exportConfig.format === 'matrix' ? `EDMS_Matrix_Report_${timestamp}.xlsx` : `EDMS_Export_${timestamp}.xlsx`; XLSX.writeFile(wb, fileName); showExportModal.value = false; showToast('success', 'Export สำเร็จ', 'ดาวน์โหลดไฟล์เรียบร้อยแล้ว'); };
     const changePage = (i) => { currentPage.value = i; resetFilters(); };
     const stats = computed(() => { const docs = documents.value || []; 
-        // ไม่นำเอกสารที่ถูก Archive แล้วมารวมในสถิติ
         const active = docs.filter(d=>d.status==='Active' && !d.isResigned && d.isArchived !== true && d.isArchived !== 'true').length; 
         const warn = docs.filter(d=>d.status==='Warning' && !d.isResigned && d.isArchived !== true && d.isArchived !== 'true').length; 
         const exp = docs.filter(d=>d.status==='Expired' && !d.isResigned && d.isArchived !== true && d.isArchived !== 'true').length; 
@@ -1389,7 +1450,6 @@ createApp({
     const showDashboardTable = (status) => { if(!status) return; dashboardFilter.value = status; setTimeout(() => { const el = document.getElementById('dashboard-detail'); if(el) el.scrollIntoView({behavior: 'smooth', block: 'start'}); }, 100); };
     const exportDashboardDocs = () => { if(!dashboardDocs.value.length) return; const d = dashboardDocs.value.map(doc => ({ 'Emp ID': doc.empId, 'Name': doc.firstName + ' ' + doc.lastName, 'Dept': doc.dept, 'Doc Type': doc.docType, 'Start Date': formatDate(doc.startDate), 'Expire Date': formatDate(doc.expDate), 'Status': doc.status, 'Remark': doc.remark })); const ws = XLSX.utils.json_to_sheet(d); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, dashboardFilter.value + "_Docs"); XLSX.writeFile(wb, "EDMS_" + dashboardFilter.value + "_Docs.xlsx"); };
     
-    // 🌟 กรองหน้า Dashboard ไม่ให้มีเอกสารเก่า (Archived)
     const dashboardDocs = computed(() => { if(!dashboardFilter.value) return []; return documents.value.filter(d => d.status === dashboardFilter.value && !d.isResigned && d.isArchived !== true && d.isArchived !== 'true'); });
     
     const formatDate = (d, t) => { if(!d) return '-'; const dt = new Date(d); const format = settings.value.dateFormat || 'dd/mm/yyyy'; const isThai = format.includes('bbbb') || format.includes('BBBB'); const isText = format.includes('MMM'); let year = dt.getFullYear(); if(isThai) year += 543; let dateStr = ''; if(isText) { const thMonths = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.']; const enMonths = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']; const month = isThai ? thMonths[dt.getMonth()] : enMonths[dt.getMonth()]; dateStr = dt.getDate() + ' ' + month + ' ' + year; } else { const month = String(dt.getMonth()+1).padStart(2,'0'); const day = String(dt.getDate()).padStart(2,'0'); dateStr = day + '/' + month + '/' + year; } if(t) return dateStr + ' ' + String(dt.getHours()).padStart(2,'0') + ':' + String(dt.getMinutes()).padStart(2,'0'); return dateStr; };
@@ -1405,7 +1465,6 @@ createApp({
             const months = ['Jan','Feb','Mar','Apr','May','Jun']; const today = new Date(); const labels = [], data = []; 
             for(let i=0; i<6; i++) { 
                 const d = new Date(today.getFullYear(), today.getMonth()+i, 1); labels.push(months[d.getMonth()]); 
-                // ไม่นับรวม Archive ในการคาดคะเน
                 data.push((documents.value||[]).filter(doc => { 
                     if(!doc.expDate || doc.isArchived === true || doc.isArchived === 'true') return false; 
                     const exp = new Date(doc.expDate); return exp.getMonth() === d.getMonth() && exp.getFullYear() === d.getFullYear();
